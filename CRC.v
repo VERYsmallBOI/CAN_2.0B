@@ -3,9 +3,10 @@ module CRC (
     srst,//sync RESET for multiple transmissions.
     clk,
     rst,
-    CRC_RG
+    CRC_RG,
+    Pause
 );
-    input wire NXTBIT, srst, clk, rst;
+    input wire NXTBIT, srst, clk, rst, Pause;
     output reg [14:0] CRC_RG;
     reg CRC_NXT;
     reg [14:0] CRC_RG1,CRC_RG2;
@@ -16,7 +17,11 @@ module CRC (
             if (!srst) begin
                 CRC_RG  <= 0;
             end else begin
-                CRC_RG <= CRC_RG2;    
+                if(Pause)begin
+                    CRC_RG <= CRC_RG;
+                end else begin
+                CRC_RG <= CRC_RG2;
+                end                    
             end
         end
     end

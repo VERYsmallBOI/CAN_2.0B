@@ -116,7 +116,7 @@ assign SJW=(4<TSEG1)?4:TSEG1[2:0];
 //what RX DOES with CNT made
 always@(posedge Tq,negedge rst)begin
   if(!rst)
-    RXOUT<=0;
+    RXOUT<=1'b1;
 
 else RXOUT<=RXOUT1;
 end
