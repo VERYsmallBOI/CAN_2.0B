@@ -2,7 +2,7 @@
 //RXBUS is input from 2FF
 //Gives out CNT1 and CNT2 for TRANSMITTER SYNCRONIZATION
 //SEG values and prop are from apb directly
-module Rengine(RXBUS, STATE, TXVALUE, CNT1, CNT2, TPROP, TSEG1, TSEG2, Tq, rst, RXOUT);
+module Rengine(RXBUS, STATE, TXVALUE, CNT1, CNT2, TPROP, TSEG1, TSEG2, Tq, rst, RXOUT, TXen);
   localparam IDLE = 0;// pending
   input RXBUS, TXVALUE, Tq, rst;
   input [3:0] TPROP, TSEG1, TSEG2;// 1 to 8
@@ -19,7 +19,7 @@ module Rengine(RXBUS, STATE, TXVALUE, CNT1, CNT2, TPROP, TSEG1, TSEG2, Tq, rst, 
   wire change;
   wire [2:0]e1,e2;
   wire [4:0]diff;//will accomodate 16 but tho until 8 is also ok cos SJW is never more than 4
-  
+  output wire TXen;//when CNT1 and CNT2 goes 0
   always @(posedge Tq, negedge rst) begin
     if (!rst)
       RXBUS_d <= 0;
@@ -30,7 +30,7 @@ module Rengine(RXBUS, STATE, TXVALUE, CNT1, CNT2, TPROP, TSEG1, TSEG2, Tq, rst, 
 assign SJW=(4<TSEG1)?4:TSEG1[2:0];
 
   assign PHASE1=TPROP + TSEG1;//TSYNC extra 1 will be by 0 
-  assign change = (RXBUS_d) && !(RXBUS); 
+  assign change = (RXBUS_d) && !(RXBUS) && (RXOUT);  //RXOUT is included cos to avoid glitches 1->0->1 
   assign diff=5'(PHASE1-CNT1);//dynamic but PHASE1 can 2 to 16 and CNT1 can be 16 to 0
   assign e1=({2'b0,SJW}>diff)?diff[2:0]:SJW; //dynamic e1 can be 4 to 0
   // dynamic e2 can be 4 to 0(edge case diff is 0 - at Tsync so wont need it anyway and literally no eror)
@@ -55,13 +55,13 @@ assign SJW=(4<TSEG1)?4:TSEG1[2:0];
       else begin
         if (TXVALUE == 1'b0) begin
           if (CNT1 != 0) begin
-            CNT1r = CNT1 - 1;
+            CNT1r = CNT1 - 1;//No Phase reSync in +ve Phase err
             CNT2r = CNT2;
           end
           else begin
             if (CNT2 != 0)begin
-              CNT2r = CNT2 - 1;
-              CNT1r = 0;
+              CNT1r=0;
+                    CNT2r=CNT2-e2;//-ve Phase err so Resync
             end
             else begin
               CNT1r = PHASE1;
@@ -127,5 +127,6 @@ always@(*)begin
   else RXOUT1=RXOUT;
 end
 
+assign TXen=(CNT1==0) && (CNT2==0);
 
 endmodule
