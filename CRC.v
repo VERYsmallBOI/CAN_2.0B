@@ -26,13 +26,13 @@ module CRC (
         end
     end
     always@(*)begin
-CRC_NXT      = NXTBIT ^ CRC_RG[14];
-CRC_RG1[14:1] = CRC_RG[13:0];
-CRC_RG1[0]    = 1'b0;
-if(CRC_NXT)
-CRC_RG2   = (CRC_RG1[14:0] ^ (15'h4599));
-else 
-CRC_RG2   = CRC_RG1;
+        CRC_NXT      = NXTBIT ^ CRC_RG[14];
+        CRC_RG1[14:1] = CRC_RG[13:0];
+        CRC_RG1[0]    = 1'b0;
+        if(CRC_NXT)
+            CRC_RG2   = (CRC_RG1[14:0] ^ (15'h4599));
+        else 
+            CRC_RG2   = CRC_RG1;
     end
 
 endmodule

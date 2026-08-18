@@ -1,9 +1,12 @@
 //changes btw states bit stufffing application
 //change RXSTATE bits and PARAMETER EQUIVALENTS
-//TX writing logic pending done
-//CRC logic pending conecction done
-//error logic requesting pending and if given by handler handling is pending
 //WILL start to integrate reciever here TOO changing name to Full on Fsm there will be a master to it for configs alone
+//will need to create a huge fsm 
+//1) make all states agnostic
+//2)compare sent and recived for next state
+//3)remove RXSTATES and other RFSM outdated dependency
+//4)add RFSM outs and ins and their dependency
+
 module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, RTR, data, D_Len, REC, TEC, ErrState, Ready, TX, req_Error);
     // Clocks & Resets
     input        rst;
