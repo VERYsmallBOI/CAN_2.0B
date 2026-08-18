@@ -1,9 +1,10 @@
 //changes btw states bit stufffing application
 //change RXSTATE bits and PARAMETER EQUIVALENTS
-//TX writing logic pending 
-//CRC logic pending conecction
-
-module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, CNT1, CNT2, TXen, ID, IDE, RTR, data, D_Len, REC, TEC, ErrState, Ready, TX, req_Error);
+//TX writing logic pending done
+//CRC logic pending conecction done
+//error logic requesting pending and if given by handler handling is pending
+//WILL start to integrate reciever here TOO changing name to Full on Fsm there will be a master to it for configs alone
+module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, RTR, data, D_Len, REC, TEC, ErrState, Ready, TX, req_Error);
     // Clocks & Resets
     input        rst;
     input        srst;
@@ -13,8 +14,6 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, CNT1, CNT2, TXen
     // Control & State Inputs
     input        Transmit;    // Master request for data transmission
     input  [3:0] RXSTATE;     // Receiver state (e.g., IDLE)
-    input  [4:0] CNT1;        //check at end did you really needed them if not remove them 
-    input  [3:0] CNT2;
     input        TXen;        //from Rengine for control to work
 
     // Data & Frame Inputs
@@ -33,7 +32,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, CNT1, CNT2, TXen
     output reg   Ready;       // Indicates controller is idle/ready
     output reg   TX;          // Serial transmit line
     wire         pause_to_crc;
-    output       req_Error;
+    output reg      req_Error;
 
     // Parameters
     //Interframe(+suspend) remote data all-transmit-time-error(just bit error and ACK eror)(there is a diff cos of TEC and REC)
@@ -106,7 +105,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, CNT1, CNT2, TXen
             end
             else begin
                 if (TXen) begin
-                    TXSTATES <= TXSTATESr;
+                    TXSTATES <= req_Error?ERROR:TXSTATESr;
                     Cnt      <= Cntr;
                     Ready    <= Readyr;
                 end
@@ -260,7 +259,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, CNT1, CNT2, TXen
                     endcase
                 end
             end
-            else begin //for RXSTATES!=IDLE but TXSTATES is IDLE so others are sending
+            else begin //for RXSTATE!=IDLE but TXSTATES is IDLE so others are sending
                 TXSTATESr = IDLE;
                 Cntr      = 0;
             end
@@ -334,9 +333,18 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, CNT1, CNT2, TXen
     end
 
     //ERROR CHECKER
-    // always @(posedge Tq, negedge rst) begin
-    //     if ()
+    always @(*) begin
+        if(TXSTATES!=ERROR || RXSTATE!=RXIDLE)begin
+        if(Sampled_din != TX && TXSTATES!=ARB && TXSTATES!=IDLE && TXSTATES!=ACKSL ) begin
+            req_Error=1; 
+        end
+        else if(Sampled_din==1 && TX==1 && TXSTATES==ACKSL)begin
+            req_Error=1;
+        end
+        else req_Error=0;
 
-    // end
-
+    end
+    
+    else req_Error=0;
+    end
 endmodule
