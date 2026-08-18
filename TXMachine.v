@@ -1,13 +1,10 @@
 //changes btw states bit stufffing application
-//change RXSTATE bits and PARAMETER EQUIVALENTS
-//WILL start to integrate reciever here TOO changing name to Full on Fsm there will be a master to it for configs alone
-//will need to create a huge fsm 
-//1) make all states agnostic
-//2)compare sent and recived for next state
-//3)remove RXSTATES and other RFSM outdated dependency
-//4)add RFSM outs and ins and their dependency
+//change RXSTATES bits and PARAMETER EQUIVALENTS
+//TX writing logic pending done
+//CRC logic pending conecction done
+//error logic requesting pending and if given by handler handling is pending
 
-module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, RTR, data, D_Len, REC, TEC, ErrState, Ready, TX, req_Error);
+module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, REC, TEC, ErrState, Ready, TX, req_Error);
     // Clocks & Resets
     input        rst;
     input        srst;
@@ -16,7 +13,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, R
 
     // Control & State Inputs
     input        Transmit;    // Master request for data transmission
-    input  [3:0] RXSTATE;     // Receiver state (e.g., IDLE)
+    input  [3:0] RXSTATES;     // Receiver state (e.g., IDLE)
     input        TXen;        //from Rengine for control to work
 
     // Data & Frame Inputs
@@ -95,20 +92,18 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, R
     always @(posedge Tq or negedge rst) begin
         if (!rst) begin
             TXSTATES <= IDLE;
-            // TEC<=0;
             Cnt      <= 0;
             Ready    <= 1;
         end
         else begin   
             if (!srst) begin
                 TXSTATES <= IDLE;
-                // TEC<=0;
                 Cnt      <= 0;
                 Ready    <= 1;
             end
             else begin
                 if (TXen) begin
-                    TXSTATES <= req_Error?ERROR:TXSTATESr;
+                    TXSTATES <= (ErrState|req_Error)?ERROR:TXSTATESr;
                     Cnt      <= Cntr;
                     Ready    <= Readyr;
                 end
@@ -118,7 +113,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, R
 
     // Next State Logic
     always @(*) begin //have to add pause logic from BS (but not crc )
-        if (TXSTATES == IDLE && RXSTATE == RXIDLE) begin
+        if (TXSTATES == IDLE && RXSTATES == RXIDLE) begin
             if (Transmit == 1) begin
                 TXSTATESr = SOF;
                 Cntr      = 0;
@@ -145,15 +140,11 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, R
                             Cntr      = IDE ? 31 : 11;
                         end
 
-                        ARB: begin
-                            if (Cnt == 0) begin
-                                Cntr      = 5;
-                                TXSTATESr = CTRL;
-                            end
-                            else begin
+                        ARB: 
+                            begin
                                 if (Sampled_din == TX) begin //also do it for others to give out bit error
-                                    Cntr      = Cnt - 1;
-                                    TXSTATESr = TXSTATES;
+                                    Cntr      = Cnt?Cnt - 1:5;
+                                    TXSTATESr = Cnt?TXSTATES:CTRL;
                                 end
                                 else begin //lost
                                     Cntr      = 0;
@@ -161,7 +152,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, R
                                     Readyr    = 1;
                                 end
                             end
-                        end
+                        
 
                         CTRL: begin
                             if (Cnt) begin
@@ -222,27 +213,30 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, R
                             end
                         end
 
-                        INTERMISSION: begin
-                            if (Cnt) begin
-                                Cntr      = Cnt - 1;
-                                TXSTATESr = TXSTATES;
+                        INTERMISSION: 
+                        begin
+                                if (Sampled_din == TX) begin //also do it for others to give out bit error
+                                    Cntr      = Cnt?Cnt - 1:7;
+                                    TXSTATESr = Cnt?TXSTATES:SUSPEND;
+                                end
+                                else begin //lost
+                                    Cntr      = 0;
+                                    TXSTATESr = IDLE;
+                                    Readyr    = 1;
+                                end
                             end
-                            else begin
-                                Cntr      = 0;
-                                TXSTATESr = (TEC > 127 || REC > 127) ? SUSPEND : IDLE;
-                            end
-                        end
 
                         SUSPEND: begin
-                            if (Cnt) begin
-                                Cntr      = Cnt - 1;
-                                TXSTATESr = TXSTATES;
+                                if (Sampled_din == TX) begin //also do it for others to give out bit error
+                                    Cntr      = Cnt?Cnt - 1:0;
+                                    TXSTATESr = Cnt?TXSTATES:IDLE;
+                                end
+                                else begin //lost
+                                    Cntr      = 0;
+                                    TXSTATESr = IDLE;
+                                    Readyr    = 1;
+                                end
                             end
-                            else begin
-                                Cntr      = 0;
-                                TXSTATESr = IDLE;
-                            end
-                        end
 
                         ERROR: begin
                             if (ErrState) begin
@@ -262,7 +256,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, R
                     endcase
                 end
             end
-            else begin //for RXSTATE!=IDLE but TXSTATES is IDLE so others are sending
+            else begin //for RXSTATES!=IDLE but TXSTATES is IDLE so others are sending
                 TXSTATESr = IDLE;
                 Cntr      = 0;
             end
@@ -337,9 +331,9 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, R
 
     //ERROR CHECKER
     always @(*) begin
-        if(TXSTATES!=ERROR || RXSTATE!=RXIDLE)begin
-        if(Sampled_din != TX && TXSTATES!=ARB && TXSTATES!=IDLE && TXSTATES!=ACKSL ) begin
-            req_Error=1; 
+        if(TXSTATES<=EOF || TXSTATES!=IDLE)begin //should be active on all the frame bits 
+        if(Sampled_din != TX && TXSTATES!=ARB && TXSTATES!=ACKSL) begin
+            req_Error=1;
         end
         else if(Sampled_din==1 && TX==1 && TXSTATES==ACKSL)begin
             req_Error=1;
@@ -350,4 +344,6 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATE, TXen, ID, IDE, R
     
     else req_Error=0;
     end
+    ///if at interframe space bit error prolly others won
+
 endmodule
