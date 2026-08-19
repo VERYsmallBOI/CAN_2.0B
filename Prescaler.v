@@ -1,4 +1,4 @@
-module prescaler(can_clk, BRP, Tq, rst);
+module Prescaler(can_clk, BRP, Tq, rst);
   input can_clk, rst;
   input [4:0] BRP;
   output reg Tq;
