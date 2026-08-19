@@ -2,11 +2,12 @@
 //RXBUS is input from 2FF
 //Gives out CNT1 and CNT2 for TRANSMITTER SYNCRONIZATION
 //SEG values and prop are from apb directly
+`default_nettype none
 module Rengine(RXBUS, STATE, TXVALUE, CNT1, CNT2, TPROP, TSEG1, TSEG2, Tq, rst, RXOUT, TXen);
   localparam IDLE = 0;// pending
-  input RXBUS, TXVALUE, Tq, rst;
-  input [3:0] TPROP, TSEG1, TSEG2;// 1 to 8
-  input [1:0] STATE; //SOF considereation
+  input wire RXBUS, TXVALUE, Tq, rst;
+  input wire [3:0] TPROP, TSEG1, TSEG2;// 1 to 8
+  input wire [1:0] STATE; //SOF considereation
   output reg [4:0] CNT1;//max is 15 anyway 8+8+1 
   reg [4:0] CNT1r; 
   output reg [3:0] CNT2; //it has to go from 7 to 0 anyway
@@ -121,11 +122,7 @@ always@(posedge Tq,negedge rst)begin
 else RXOUT<=RXOUT1;
 end
 
-always@(*)begin
-  if((CNT1==0) && (CNT2==(TSEG2-1)))
-    RXOUT1=RXBUS;
-  else RXOUT1=RXOUT;
-end
+assign RXen=(CNT1==0) && (CNT2==(TSEG2-1));//Moving sampling to RXMachine bc of timing problems
 
 assign TXen=(CNT1==0) && (CNT2==0);
 

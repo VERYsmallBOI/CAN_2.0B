@@ -3,13 +3,13 @@
 //TX writing logic pending done
 //CRC logic pending conecction done
 //error logic requesting pending and if given by handler handling is pending
-
-module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, REC, TEC, ErrState, Ready, TX, req_Error);
+//overload override pending
+module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, Ready, REC, TEC, ErrState, TX, req_Error);
     // Clocks & Resets
     input        rst;
     input        srst;
     input        Tq;
-    input        Sampled_din; //will be used for ACK and bit error
+    input        Sampled_din; //will be used for ACK and bit error get from RXMachine
 
     // Control & State Inputs
     input        Transmit;    // Master request for data transmission
@@ -29,43 +29,54 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
     input        ErrState;    //from errorhandler
 
     // Module Outputs
-    output reg   Ready;       // Indicates controller is idle/ready
+    output   Ready;       // Indicates controller is idle/ready
     output reg   TX;          // Serial transmit line
     wire         pause_to_crc;
     output reg      req_Error;
 
     // Parameters
     //Interframe(+suspend) remote data all-transmit-time-error(just bit error and ACK eror)(there is a diff cos of TEC and REC)
-    parameter IDLE         = 0,
-              SOF          = 1,
-              ARB          = 2,
-              CTRL         = 3,
-              DATA         = 4,
-              CRC_SEQ      = 5,
-              CRC_DL       = 6,
-              ACKSL        = 7,
-              ACK_DL       = 8,
-              EOF          = 9,
-              INTERMISSION = 10,
-              SUSPEND      = 11,
-              ERROR        = 12;
+    localparam IDLE         = 4'd0,
+            SOF          = 4'd1,
+            ARB          = 4'd2,
+            CTRL         = 4'd3,
+            DATA         = 4'd4,
+            CRC_SEQ      = 4'd5,
+            CRC_DL       = 4'd6,
+            ACKSL        = 4'd7,
+            ACK_DL       = 4'd8,
+            EOF          = 4'd9,
+            INTERMISSION = 4'd10,
+            SUSPEND      = 4'd11,
+            ERROR        = 4'd12;
 
-    parameter RXIDLE = 0; //NEDED to change after writing RXMachine
+    localparam RXIDLE = 0,
+            RXINTERMISSION3=13;
 
     // Internal Registers
     reg [3:0]  TXSTATES,TXSTATESr;   // FSM state register (12 states)
-    reg [63:0] Cnt, Cntr;
+    reg [5:0] Cnt, Cntr;
 
     // Internal Wires / Registers
     wire       pause_from_bs;
 
     reg        pause_to_bs; //goes to BS
-    reg        Readyr;
     reg        bfrTX;
     wire       BSTX;
     wire [14:0] out_CRC;
 
-    assign pause_to_crc = pause_to_bs & pause_from_bs & (TXSTATES == 5); //bitstuffer pause states + CRC_SEQ
+    assign pause_to_crc = pause_to_bs | pause_from_bs | (TXSTATES == CRC_SEQ); //bitstuffer pause states + CRC_SEQ
+
+    // Pause Logic
+    always @(*) begin
+        //the below means 6(CRC_DL) to 11(SUSPEND) and IDLE and overall TXen not on
+        if (!TXen || (TXSTATES > IDLE && TXSTATES < CRC_DL)) begin
+            pause_to_bs = 1;
+        end
+        else begin
+            pause_to_bs = 0;
+        end
+    end
 
     // Submodule
     bitstuffer TransBS(
@@ -93,19 +104,16 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
         if (!rst) begin
             TXSTATES <= IDLE;
             Cnt      <= 0;
-            Ready    <= 1;
         end
         else begin   
             if (!srst) begin
                 TXSTATES <= IDLE;
                 Cnt      <= 0;
-                Ready    <= 1;
             end
             else begin
                 if (TXen) begin
                     TXSTATES <= (ErrState|req_Error)?ERROR:TXSTATESr;
                     Cnt      <= Cntr;
-                    Ready    <= Readyr;
                 end
             end
         end
@@ -113,21 +121,18 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
 
     // Next State Logic
     always @(*) begin //have to add pause logic from BS (but not crc )
-        if (TXSTATES == IDLE && RXSTATES == RXIDLE) begin
+        if ((TXSTATES == IDLE) && (RXSTATES == RXIDLE||RXSTATES ==RXINTERMISSION3)) begin
             if (Transmit == 1) begin
                 TXSTATESr = SOF;
                 Cntr      = 0;
-                Readyr    = 0;
             end
             else begin 
                 TXSTATESr = IDLE;
                 Cntr      = 0;
-                Readyr    = 1;
             end
         end
         else begin //path for error pending 
             if (TXSTATES != IDLE) begin
-                Readyr = 0;
                 if (pause_from_bs && ~pause_to_bs) begin //only consider pause from bs at to_pause 1
                     //stay at current cnt and state
                     Cntr      = Cnt;
@@ -143,30 +148,43 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
                         ARB: 
                             begin
                                 if (Sampled_din == TX) begin //also do it for others to give out bit error
-                                    Cntr      = Cnt?Cnt - 1:5;
-                                    TXSTATESr = Cnt?TXSTATES:CTRL;
+                                    Cntr      = (Cnt!=0)?Cnt - 1:5;
+                                    TXSTATESr = (Cnt!=0)?TXSTATES:CTRL;
                                 end
                                 else begin //lost
                                     Cntr      = 0;
                                     TXSTATESr = IDLE;
-                                    Readyr    = 1;
                                 end
                             end
                         
 
                         CTRL: begin
-                            if (Cnt) begin
+                            if (Cnt!=0) begin
                                 Cntr      = Cnt - 1;
                                 TXSTATESr = TXSTATES;
                             end
                             else begin
-                                Cntr      = RTR ? 14 : (D_Len * 8) - 1; //*8 is for bytes to bits
-                                TXSTATESr = RTR ? CRC_SEQ : DATA;
+                                if(RTR)begin
+                                    Cntr=14;
+                                    TXSTATESr=CRC_SEQ;
+                                end
+                                else begin
+                                    if(D_Len==0)
+                                    begin
+                                        Cntr=14;
+                                        TXSTATESr=CRC_SEQ;
+                                    end
+                                    else begin
+                                         Cntr=(D_Len*8)-1;
+                                         TXSTATESr=DATA;
+                                    end
+                                end 
                             end
                         end
 
+
                         DATA: begin
-                            if (Cnt) begin
+                            if (Cnt!=0) begin
                                 Cntr      = Cnt - 1;
                                 TXSTATESr = TXSTATES;
                             end
@@ -177,7 +195,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
                         end
 
                         CRC_SEQ: begin
-                            if (Cnt) begin
+                            if (Cnt!=0) begin
                                 Cntr      = Cnt - 1;
                                 TXSTATESr = TXSTATES;
                             end
@@ -203,7 +221,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
                         end
 
                         EOF: begin
-                            if (Cnt) begin
+                            if (Cnt!=0) begin
                                 Cntr      = Cnt - 1;
                                 TXSTATESr = TXSTATES;
                             end
@@ -216,25 +234,35 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
                         INTERMISSION: 
                         begin
                                 if (Sampled_din == TX) begin //also do it for others to give out bit error
-                                    Cntr      = Cnt?Cnt - 1:7;
-                                    TXSTATESr = Cnt?TXSTATES:SUSPEND;
+                                    if(Cnt==0)begin
+                                        if(TEC>127 || REC>127 )begin
+                                        TXSTATESr=SUSPEND;//8 R
+                                        Cntr=7;
+                                        end
+                                        else begin
+                                            TXSTATESr=(Transmit &&(RXSTATES == RXIDLE||RXSTATES ==RXINTERMISSION3) )?SOF:IDLE;
+                                            Cntr=0;
+                                        end
+                                    end
+                                    else begin
+                                        TXSTATESr=INTERMISSION;
+                                        Cntr=Cnt-1;
+                                    end
                                 end
-                                else begin //lost
+                                else begin//Someother thing(overload error someother node took over) happened
                                     Cntr      = 0;
                                     TXSTATESr = IDLE;
-                                    Readyr    = 1;
                                 end
                             end
 
                         SUSPEND: begin
                                 if (Sampled_din == TX) begin //also do it for others to give out bit error
-                                    Cntr      = Cnt?Cnt - 1:0;
-                                    TXSTATESr = Cnt?TXSTATES:IDLE;
+                                    Cntr      = (Cnt!=0)?Cnt - 1:0;
+                                    TXSTATESr = (Cnt!=0)?TXSTATES:(Transmit && (RXSTATES == RXIDLE||RXSTATES ==RXINTERMISSION3))?SOF:IDLE;
                                 end
                                 else begin //lost
                                     Cntr      = 0;
                                     TXSTATESr = IDLE;
-                                    Readyr    = 1;
                                 end
                             end
 
@@ -263,16 +291,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
         end
     end
 
-    // Pause Logic
-    always @(*) begin
-        //the below means 6(CRC_DL) to 11(SUSPEND) and IDLE and overall TXen not on
-        if (!TXen || (TXSTATES[3] || (TXSTATES[2] && TXSTATES[1]) || ~|TXSTATES)) begin
-            pause_to_bs = 1;
-        end
-        else begin
-            pause_to_bs = 0;
-        end
-    end
+
 
     // TX bit generation (combinational)
     always @(*) begin
@@ -280,36 +299,30 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
             bfrTX = 0;
         end
         else if (TXSTATES == ARB) begin
-            if (IDE) begin
-                if (Cnt != 0)
-                    bfrTX = ID[Cnt + 17];
-                else
-                    bfrTX = RTR;
-            end
-            else begin
-                if (Cnt > 20)
-                    bfrTX = ID[Cnt - 3]; //31-21 to 28-18 first 11 bits
-                else if (Cnt == 20)
+            
+                if (Cnt > 5'd20)
+                    bfrTX = ID[5'(Cnt - 3)]; //31-21 to 28-18 first 11 bits
+                else if (Cnt == 5'd20)
                     bfrTX = 1; //SRR
                 else if (Cnt == 19)
                     bfrTX = IDE;
                 else if (Cnt != 0)
-                    bfrTX = ID[Cnt - 1]; //last bits 18 
+                    bfrTX = ID[5'(Cnt - 1)]; //last bits 18 
                 else
                     bfrTX = RTR;
-            end
+            
         end
         else if (TXSTATES == CTRL) begin
             if (Cnt == 5 || Cnt == 4)
                 bfrTX = 0;
             else
-                bfrTX = D_Len[Cnt];
+                bfrTX = D_Len[2'(Cnt)];
         end
         else if (TXSTATES == DATA) begin
             bfrTX = data[Cnt];
         end
         else if (TXSTATES == CRC_SEQ) begin
-            bfrTX = out_CRC[Cnt];
+            bfrTX = out_CRC[4'(Cnt)];
         end
         else begin //CRC_DL ACKSL ACK_DL EOF INTERMISSION SUSPEND ERROR(override by handler) IDLE too
             bfrTX = 1;
@@ -331,7 +344,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
 
     //ERROR CHECKER
     always @(*) begin
-        if(TXSTATES<=EOF || TXSTATES!=IDLE)begin //should be active on all the frame bits 
+        if(TXSTATES<=EOF && TXSTATES!=IDLE)begin //should be active on all the frame bits 
         if(Sampled_din != TX && TXSTATES!=ARB && TXSTATES!=ACKSL) begin
             req_Error=1;
         end
@@ -345,5 +358,5 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
     else req_Error=0;
     end
     ///if at interframe space bit error prolly others won
-
+assign Ready=(TXSTATES==IDLE);
 endmodule
