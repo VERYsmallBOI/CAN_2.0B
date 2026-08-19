@@ -122,7 +122,11 @@ always@(posedge Tq,negedge rst)begin
 else RXOUT<=RXOUT1;
 end
 
-assign RXen=(CNT1==0) && (CNT2==(TSEG2-1));//Moving sampling to RXMachine bc of timing problems
+always@(*)begin
+  if((CNT1==0) && (CNT2==(TSEG2-1)))
+    RXOUT1=RXBUS;
+  else RXOUT1=RXOUT;
+end
 
 assign TXen=(CNT1==0) && (CNT2==0);
 
