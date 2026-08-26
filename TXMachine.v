@@ -51,7 +51,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
             ERROR        = 4'd12;
 
     localparam RXIDLE = 0,
-            RXINTERMISSION3=13;
+            RXINTERMISSION3=11;//checck from rx
 
     // Internal Registers
     reg [3:0]  TXSTATES,TXSTATESr;   // FSM state register (12 states)
@@ -69,8 +69,8 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
 
     // Pause Logic
     always @(*) begin
-        //the below means 6(CRC_DL) to 11(SUSPEND) and IDLE and overall TXen not on
-        if (!TXen || (TXSTATES > IDLE && TXSTATES < CRC_DL)) begin
+        //the below means 6(CRC_DL) to 12(ERROR) and IDLE and overall TXen not on
+        if (!TXen || (TXSTATES == IDLE || TXSTATES > CRC_SEQ)) begin
             pause_to_bs = 1;
         end
         else begin

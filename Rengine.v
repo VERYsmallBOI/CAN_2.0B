@@ -3,11 +3,11 @@
 //Gives out CNT1 and CNT2 for TRANSMITTER SYNCRONIZATION
 //SEG values and prop are from apb directly
 `default_nettype none
-module Rengine(RXBUS, STATE, TXVALUE, CNT1, CNT2, TPROP, TSEG1, TSEG2, Tq, rst, RXOUT, TXen);
+module Rengine(RXBUS, RXSTATES, TXVALUE, CNT1, CNT2, TPROP, TSEG1, TSEG2, Tq, rst, RXOUT, TXen, RXen);
   localparam IDLE = 0;// pending
   input wire RXBUS, TXVALUE, Tq, rst;
   input wire [3:0] TPROP, TSEG1, TSEG2;// 1 to 8
-  input wire [1:0] STATE; //SOF considereation
+  input wire [1:0] RXSTATES; //SOF considereation
   output reg [4:0] CNT1;//max is 15 anyway 8+8+1 
   reg [4:0] CNT1r; 
   output reg [3:0] CNT2; //it has to go from 7 to 0 anyway
@@ -20,7 +20,7 @@ module Rengine(RXBUS, STATE, TXVALUE, CNT1, CNT2, TPROP, TSEG1, TSEG2, Tq, rst, 
   wire change;
   wire [2:0]e1,e2;
   wire [4:0]diff;//will accomodate 16 but tho until 8 is also ok cos SJW is never more than 4
-  output wire TXen;//when CNT1 and CNT2 goes 0
+  output wire TXen,RXen;//when CNT1 and CNT2 goes 0
   always @(posedge Tq, negedge rst) begin
     if (!rst)
       RXBUS_d <= 0;
@@ -49,7 +49,7 @@ assign SJW=(4<TSEG1)?4:TSEG1[2:0];
   end
  always @(*) begin
     if (change) begin
-      if (STATE == IDLE) begin
+      if (RXSTATES == IDLE) begin
         CNT1r = PHASE1;
         CNT2r = TSEG2-1;
       end
@@ -129,5 +129,5 @@ always@(*)begin
 end
 
 assign TXen=(CNT1==0) && (CNT2==0);
-
+assign RXen=(CNT1==0) && (CNT2==(TSEG2-1));
 endmodule

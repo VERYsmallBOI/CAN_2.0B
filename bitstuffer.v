@@ -4,30 +4,13 @@ module bitstuffer (
     input  wire rst,
     input  wire srst,      // Soft reset
     input  wire pause_in,
-    output reg  bitout,
+    output  bitout,
     output wire pause_out  // Pause signal to hold new data from master
 );
     reg [4:0] serial;
 
-    always @(posedge clk, negedge rst) begin
-        if (!rst) begin
-            bitout <= 1'b1;
-        end
-        else begin
-            if (!srst) begin
-                bitout <= 1'b1;
-            end
-            else begin
-                if (pause_out) begin
-                    bitout <= ~serial[0];
-                end
-                else begin
-                    bitout <= din;
-                end
-            end
-        end
-    end
 
+    assign bitout=pause_out?~serial[0]:din;
     always @(posedge clk, negedge rst) begin
         if (!rst) begin
             serial <= 5'b00001;  // SOF is always 0
