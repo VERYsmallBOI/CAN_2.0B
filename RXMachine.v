@@ -12,12 +12,10 @@
 //Bus overtake shoudl work on TXen
 // sampling(dont register it-breaks timing)/state transisition shoudl work on RXen
 
-module RXMachine(Tq, rst, srst, TOFILTERd, TOFILTERI, RXBUS, D_Len, req_Error, IDE, AckTakeOver, RXen, RTR, ErrState, OvlState, RXSTATES);
-input Tq,rst,RXBUS,srst,RXen;
+module RXMachine(Tq, rst, srst, TOFILTERd, TOFILTERI, RXBUS, D_Len, req_Error, IDE, AckTakeOver, RXen, TXen, RTR, ErrState, OvlState, RXSTATES, done);
+input Tq,rst,RXBUS,srst,RXen,TXen;
 output reg [63:0]TOFILTERd;//to data filetered
 output reg [28:0]TOFILTERI;//to id filter
-output AckTakeOver;
-
 output reg req_Error;
 wire pause_to_crc;
 input ErrState;//from error handler 
@@ -29,45 +27,81 @@ reg [3:0]RXSTATESr;
 reg [5:0] Cnt,Cntr;
 reg sample;
 wire bitisbs,allequal,usebs;
-
-localparam  IDLE           = 0,
-            SOF            = 1,
-            ARB            = 2,
-            CTRL           = 3,
-            DATA           = 4,
-            CRC_SEQ        = 5,
-            CRC_DL         = 6,
-            ACKSL          = 7,
-            ACK_DL         = 8,
-            EOF            = 9,
-            INTERMISSION12 = 10,
-            INTERMISSION3  = 11,
-            OVERLOAD       = 12,
-            ERROR          = 13;//No need for SUSPEND
+output reg done;
+reg req_Errorr;
+localparam  IDLE           = 4'd0,
+            SOF            = 4'd1,
+            ARB            = 4'd2,
+            CTRL           = 4'd3,
+            DATA           = 4'd4,
+            CRC_SEQ        = 4'd5,
+            CRC_DL         = 4'd6,
+            ACKSL          = 4'd7,
+            ACK_DL         = 4'd8,
+            EOF            = 4'd9,
+            INTERMISSION12 = 4'd10,
+            INTERMISSION3  = 4'd11,
+            OVERLOAD       = 4'd12,
+            ERROR          = 4'd13;//No need for SUSPEND
 wire [14:0]out_CRC; 
 output reg RTR;//filled by Bit evaluator
 output reg IDE;//filled by bit evaluator
 output reg [3:0]D_Len;
 wire srst_crc;
 reg [5:0]bs;
-assign pause_to_crc=(bitisbs)&&(~RXen)||(~usebs);
+assign pause_to_crc=(bitisbs)||(~RXen)||(~usebs);
 always@(posedge Tq,negedge rst)begin
     if(!rst)begin
     RXSTATES<=IDLE;
-    AckTakeOver<=1;
+    Cnt<=0;
     end
     else if(!srst)begin
         RXSTATES<=IDLE;
-        AckTakeOver<=1;
+        Cnt<=0;
     end
     else begin
         if(RXen)begin
         RXSTATES<=ErrState?ERROR:(OvlState?OVERLOAD:RXSTATESr);
         Cnt<=Cntr;
-        AckTakeOver<=(RXSTATESr!=ACKSL);//ifit reached here no problems
         end
     end
 end
+always @(posedge Tq or negedge rst) begin
+    if (!rst) begin
+        // Reset conditions
+        AckTakeOver<=1;
+    end
+    else if (!srst) begin
+        // Synchronous reset conditions
+        AckTakeOver<=1;
+    end
+    else begin
+        if (TXen) begin
+            // RX enabled conditions
+            if(RXSTATES==CRC_DL)begin//RX will be 1 state behind
+                AckTakeOver<=(req_Errorr||req_Error);
+            end
+            else AckTakeOver<=1;
+        end
+    end
+end
+
+always@(posedge Tq or negedge rst)begin
+if(!rst)begin
+    done<=0;
+end
+else if(!srst)begin
+done<=0;
+end
+else if((~req_Errorr&&~req_Error)&&(RXSTATES==EOF)&&(Cnt==0))
+    done<=1;
+    else if(RXSTATES>=SOF && RXSTATES<=ACKSL) begin
+        done<=0;
+    end
+    else done<=done;
+
+end
+
 
 always@(*)begin //naturally the sampling will become based on RXen cos capture is based on it
     //if() check if there is an overriding condition present
@@ -90,7 +124,7 @@ always@(*)begin //naturally the sampling will become based on RXen cos capture i
     end
 
     ARB: begin
-        if(Cnt)begin
+        if(Cnt!=0)begin
         if(Cnt==20 && RXBUS==0)begin// wil check for IDE directly 1->SRR 0-> RTR so checks 12th bit unsampled bfr going 
                 Cntr=5;
                 RXSTATESr=CTRL;
@@ -109,8 +143,8 @@ always@(*)begin //naturally the sampling will become based on RXen cos capture i
 
     CTRL: begin
         if(Cnt==0)begin
-            Cntr=(RTR||(D_Len==0))?CRC_SEQ:((D_Len<<3) -1);
-            RXSTATESr=RTR?DATA:CRC_SEQ;
+            Cntr=(RTR||(D_Len==0))?14:(({D_Len[2:0],RXBUS}<<3) -1);
+            RXSTATESr=(RTR||(D_Len==0))?CRC_SEQ:DATA;
         end
         else begin
             Cntr=Cnt-1;
@@ -119,7 +153,7 @@ always@(*)begin //naturally the sampling will become based on RXen cos capture i
     end 
 
     DATA: begin
-        if(Cnt)begin
+        if(Cnt!=0)begin
             Cntr=Cnt-1;
             RXSTATESr=RXSTATES;
         end
@@ -130,7 +164,7 @@ always@(*)begin //naturally the sampling will become based on RXen cos capture i
     end
 
     CRC_SEQ: begin
-        if(Cnt)begin
+        if(Cnt!=0)begin
             Cntr=Cnt-1;
             RXSTATESr=RXSTATES;
         end
@@ -157,7 +191,7 @@ always@(*)begin //naturally the sampling will become based on RXen cos capture i
     end
 
     EOF: begin
-        if(Cnt)begin
+        if(Cnt!=0)begin
             Cntr=Cnt-1;
             RXSTATESr=RXSTATES;
         end
@@ -168,7 +202,7 @@ always@(*)begin //naturally the sampling will become based on RXen cos capture i
     end
 
     INTERMISSION12: begin
-        if(Cnt)begin
+        if(Cnt!=0)begin
             Cntr=Cnt-1;
             RXSTATESr=RXSTATES;
         end
@@ -179,7 +213,7 @@ always@(*)begin //naturally the sampling will become based on RXen cos capture i
     end
     INTERMISSION3: begin
         Cntr=0;
-        RXSTATESr=IDLE;
+        RXSTATESr=(RXBUS==0)?SOF:IDLE;
     end
 
     OVERLOAD: begin
@@ -213,7 +247,7 @@ endcase
 end
 //CRC
     CRC rxcrc(
-        .NXTBIT(RXBUS),
+        .NXTBIT(sample),
         .srst(srst_crc),
         .clk(Tq),
         .rst(rst),
@@ -221,7 +255,7 @@ end
         .Pause(pause_to_crc));
 
 
-assign srst_crc=srst&&(usebs);//rst it to 0 for when it is out of the frame bs parts
+assign srst_crc=srst&&(RXSTATES != IDLE) && (RXSTATES != INTERMISSION3) && (RXSTATES!=EOF);//rst it to 0 for when it is out of the frame bs parts
 
 //BIT STUFFER
 //dont have to pause (remember from Bitstuffer edge case)
@@ -234,7 +268,13 @@ end
 else begin
     if(RXen)
     begin
+        if((SOF<=RXSTATES)&&(RXSTATES<=CRC_SEQ))begin
         bs<={bs[4:0],RXBUS};
+        end else if((RXSTATES == IDLE || RXSTATES == INTERMISSION3) && RXBUS == 0)
+        begin
+            bs<=6'b000010;
+        end
+        else bs<=6'b000001; 
     end
     else bs<=bs;
 end
@@ -257,7 +297,7 @@ end
 
 
 assign usebs=(SOF<=RXSTATES)&&(RXSTATES<=CRC_SEQ);//same as CRC
-assign allequal=&(bs[4:0]) || ~(|(bs[4:0]));
+assign allequal=&(bs[5:1]) || ~(|(bs[5:1]));
 //use the below when above is correct
 assign bitisbs=usebs&allequal;
 
@@ -270,7 +310,7 @@ always@(*)begin//sampling is fine here cos RX can push timing here alone as ERRO
 //but nowhere it should be done.
     if(IDLE!=RXSTATES&& RXSTATES<CRC_DL && (&(bs) || ~(|(bs))))
         req_Error=1;
-    else if(RXSTATES==CRC_SEQ && RXSTATESr==CRC_DL && (out_CRC!=0))//even if CRC_SEQ is not finished by bitstuffer interjecting the pause logic will work here
+    else if(RXSTATES==ACK_DL && (out_CRC!=0))//even if CRC_SEQ is not finished by bitstuffer interjecting the pause logic will work here
         req_Error=1;
     else if(RXSTATES==EOF && Cnt!=0 && sample==0)
         req_Error=1;
@@ -279,7 +319,19 @@ always@(*)begin//sampling is fine here cos RX can push timing here alone as ERRO
    else 
       req_Error=0;
 end
-
+always@(posedge Tq or negedge rst)begin
+if(!rst)begin
+    req_Errorr<=0;
+end
+else 
+if(!srst)begin
+    req_Errorr<=0;
+end
+else if(RXSTATES==IDLE || RXSTATES==SOF || RXSTATES==ERROR)begin
+    req_Errorr<=0;
+end
+else req_Errorr<=req_Errorr||req_Error;
+end
 //at intermission is overload
 
 // when using sampled values use whole thing sampled to avoid timing mismatch
@@ -289,12 +341,14 @@ always @(posedge Tq or negedge rst) begin//check for bs
         TOFILTERI <= 0;
         RTR       <= 1; // cant actually say what is it with frame structure
         IDE       <= 0; // default is 0 and if 1 will get overwrtiten at 19 else will be 0
+        D_Len     <= 0;
     end
     else if (!srst) begin
         TOFILTERd <= 0;
         TOFILTERI <= 0;
         RTR       <= 1;
         IDE       <= 0;
+        D_Len     <= 0;
     end
     else begin
         if (RXen && ~bitisbs) begin//not stuffed and at RXen
@@ -302,10 +356,7 @@ always @(posedge Tq or negedge rst) begin//check for bs
                 TOFILTERd <= {TOFILTERd[62:0], sample}; // sample will give prevoius value as (think sof whihc is slower actually)
             end
             else if (RXSTATES == ARB) begin
-                if (Cnt != 20 && Cnt != 19 && Cnt != 0) begin
-                    TOFILTERI <= TOFILTERI;
-                end
-                else if (Cnt == 20 || Cnt == 0) begin
+               if (Cnt == 20 || Cnt == 0) begin
                     RTR <= sample;
                 end
                 else if (Cnt == 19) begin
@@ -314,6 +365,17 @@ always @(posedge Tq or negedge rst) begin//check for bs
                 else begin
                     TOFILTERI <= {TOFILTERI[27:0], sample};
                 end
+            end
+            else if (RXSTATES == CTRL) begin
+                if(Cnt[2:0]!=4'd5 && Cnt[2:0]!=4'd4)
+                    D_Len <= {D_Len[2:0],sample};
+            end
+            else if(RXSTATES == IDLE || RXSTATES == SOF)begin
+                        TOFILTERd <= 0;
+                        TOFILTERI <= 0;
+                        RTR       <= 1;
+                        IDE       <= 0;
+                        D_Len     <= 0;
             end
         end
     end
