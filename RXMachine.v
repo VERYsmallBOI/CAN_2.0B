@@ -61,7 +61,7 @@ always@(posedge Tq,negedge rst)begin
     end
     else begin
         if(RXen)begin
-        RXSTATES<=ErrState?ERROR:(OvlState?OVERLOAD:RXSTATESr);
+        RXSTATES<=(req_Errorr||ErrState)?ERROR:(OvlState?OVERLOAD:RXSTATESr);
         Cnt<=Cntr;
         end
     end
@@ -327,10 +327,12 @@ else
 if(!srst)begin
     req_Errorr<=0;
 end
-else if(RXSTATES==IDLE || RXSTATES==SOF || RXSTATES==ERROR)begin
+else if(TXen)begin
+ if(RXSTATES==IDLE || RXSTATES==SOF || RXSTATES==ERROR)begin
     req_Errorr<=0;
 end
 else req_Errorr<=req_Errorr||req_Error;
+end
 end
 //at intermission is overload
 

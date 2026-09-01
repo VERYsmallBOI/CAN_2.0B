@@ -4,7 +4,7 @@
 //CRC logic pending conecction done
 //error logic requesting pending and if given by handler handling is pending
 //overload override pending
-module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, Ready, REC, TEC, ErrState, TX, req_Error);
+module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, done, REC, TEC, ErrState, TX, req_Error);
     // Clocks & Resets
     input        rst;
     input        srst;
@@ -29,11 +29,11 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
     input        ErrState;    //from errorhandler
 
     // Module Outputs
-    output   Ready;       // Indicates controller is idle/ready
     output reg   TX;          // Serial transmit line
     wire         pause_to_crc,srst_crc;
     output reg      req_Error;
-
+    reg req_Errorr;
+    output reg done;
     // Parameters
     //Interframe(+suspend) remote data all-transmit-time-error(just bit error and ACK eror)(there is a diff cos of TEC and REC)
     localparam IDLE         = 4'd0,
@@ -360,5 +360,35 @@ assign srst_crc=srst&&(TXSTATES != IDLE) && (TXSTATES != INTERMISSION) && (TXSTA
     else req_Error=0;
     end
     ///if at interframe space bit error prolly others won
-assign Ready=(TXSTATES==IDLE);
+
+always @(posedge Tq or negedge rst) begin
+    if (!rst) begin
+        // Reset conditions
+        req_Errorr<=0;
+        done<=1;
+    end
+    else if (!srst) begin
+        req_Errorr<=0;
+        done<=1;
+    end
+    else begin
+        
+        if (TXen) begin
+            // RX enabled conditions
+            if(TXSTATES==IDLE|| TXSTATES==INTERMISSION ||TXSTATES==SUSPEND)begin
+                req_Errorr<=0;
+            end
+            else req_Errorr<=req_Errorr||req_Error;
+            
+            if(req_Error==0 && req_Errorr==0 && TXSTATES==EOF && Cnt==0)
+                done<=1;
+            else if(TXSTATES==ARB && TXSTATESr==IDLE)//arb lost
+                done<=1;
+            else if(TXSTATES==IDLE || TXSTATES==INTERMISSION || TXSTATES==SUSPEND)
+                done<=done;
+            else done<=0;
+        end
+    end
+end
+
 endmodule
