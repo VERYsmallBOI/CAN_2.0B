@@ -4,7 +4,7 @@
 //CRC logic pending conecction done
 //error logic requesting pending and if given by handler handling is pending
 //overload override pending
-module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, done, REC, TEC, ErrState, TX, req_Error);
+module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, done, REC, TEC, ErrState, TX, req_Error,done_for_EH);
     // Clocks & Resets
     input        rst;
     input        srst;
@@ -34,6 +34,7 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
     output reg      req_Error;
     reg req_Errorr;
     output reg done;
+    output wire done_for_EH;
     // Parameters
     //Interframe(+suspend) remote data all-transmit-time-error(just bit error and ACK eror)(there is a diff cos of TEC and REC)
     localparam IDLE         = 4'd0,
@@ -390,5 +391,5 @@ always @(posedge Tq or negedge rst) begin
         end
     end
 end
-
+assign done_for_EH=done&&(INTERMISSION==TXSTATES)&&(Cnt==2);
 endmodule
