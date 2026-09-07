@@ -1,10 +1,6 @@
-//changes btw states bit stufffing application
-//change RXSTATES bits and PARAMETER EQUIVALENTS
-//TX writing logic pending done
-//CRC logic pending conecction done
-//error logic requesting pending and if given by handler handling is pending
 //overload override pending
-module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, done, REC, TEC, ErrState, TX, req_Error,done_for_EH);
+//imtx functionality pending
+module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, done, REC, TEC, ErrState, TX, req_Error, imTX);
     // Clocks & Resets
     input        rst;
     input        srst;
@@ -24,17 +20,16 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
     input  [3:0] D_Len;       //0 to 8
 
     // Error Counter Inputs/Outputs
-    input wire [7:0] REC;     // Receive Error Counter (0 to 255)
-    input wire [7:0] TEC;     // Transmit Error Counter
+    input wire [8:0] REC;     // Receive Error Counter (0 to 255)
+    input wire [8:0] TEC;     // Transmit Error Counter
     input        ErrState;    //from errorhandler
-
+    output reg imTX;
     // Module Outputs
     output reg   TX;          // Serial transmit line
     wire         pause_to_crc,srst_crc;
     output reg      req_Error;
     reg req_Errorr;
     output reg done;
-    output wire done_for_EH;
     // Parameters
     //Interframe(+suspend) remote data all-transmit-time-error(just bit error and ACK eror)(there is a diff cos of TEC and REC)
     localparam IDLE         = 4'd0,
@@ -367,10 +362,12 @@ always @(posedge Tq or negedge rst) begin
         // Reset conditions
         req_Errorr<=0;
         done<=1;
+        imTX<=0;
     end
     else if (!srst) begin
         req_Errorr<=0;
         done<=1;
+        imTX<=0;
     end
     else begin
         
@@ -388,8 +385,11 @@ always @(posedge Tq or negedge rst) begin
             else if(TXSTATES==IDLE || TXSTATES==INTERMISSION || TXSTATES==SUSPEND)
                 done<=done;
             else done<=0;
+            if(TXSTATESr>IDLE && TXSTATESr<INTERMISSION)begin
+                imTX<=1;
+            end
+            else imTX<=imTX&&(TXSTATES!=IDLE);
         end
     end
 end
-assign done_for_EH=done&&(INTERMISSION==TXSTATES)&&(Cnt==2);
 endmodule

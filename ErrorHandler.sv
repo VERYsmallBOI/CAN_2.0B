@@ -57,6 +57,7 @@ always @(posedge Tq or negedge rst) begin
         nozero<=1;
         RECin<=REC;
         TECin<=TEC;
+        State<=0;
     end
     else begin
         if (TXen) begin
