@@ -1,0 +1,24 @@
+module TFF(D,rst,clk,q);
+input D,rst,clk;
+
+output q;
+dff d1(D,rst,clk,q1);
+dff d2(q1,rst,clk,q);
+
+endmodule
+
+module dff(D,rst,clk,q);
+input D,rst,clk;
+output reg q;
+
+
+always@(posedge clk,negedge rst)begin
+
+    if(!rst)begin
+        q<=0;
+    end
+    else q<=D;
+
+end
+
+endmodule

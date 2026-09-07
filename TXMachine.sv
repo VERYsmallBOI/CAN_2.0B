@@ -1,6 +1,6 @@
 //overload override pending
 //imtx functionality pending
-module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, done, REC, TEC, ErrState, TX, req_Error, imTX);
+module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, RTR, data, D_Len, done, REC, TEC, ErrState, TX, req_Error, imTX, TXSTATES);
     // Clocks & Resets
     input        rst;
     input        srst;
@@ -50,7 +50,8 @@ module TXMachine(rst, srst, Tq, Sampled_din, Transmit, RXSTATES, TXen, ID, IDE, 
             RXINTERMISSION3=11;//checck from rx
 
     // Internal Registers
-    reg [3:0]  TXSTATES,TXSTATESr;   // FSM state register (12 states)
+    output reg [3:0]  TXSTATES;
+    reg [3:0] TXSTATESr;   // FSM state register (12 states)
     reg [5:0] Cnt, Cntr;
 
     // Internal Wires / Registers
@@ -140,7 +141,7 @@ assign srst_crc=srst&&(TXSTATES != IDLE) && (TXSTATES != INTERMISSION) && (TXSTA
                     case (TXSTATES)
                         SOF: begin
                             TXSTATESr = ARB;
-                            Cntr      = IDE ? 31 : 11;
+                            Cntr      = IDE ? 6'd31 :6'd11;
                         end
 
                         ARB: 
@@ -173,7 +174,7 @@ assign srst_crc=srst&&(TXSTATES != IDLE) && (TXSTATES != INTERMISSION) && (TXSTA
                                         TXSTATESr=CRC_SEQ;
                                     end
                                     else begin
-                                         Cntr=(D_Len*8)-1;
+                                         Cntr=6'((D_Len*8)-1);
                                          TXSTATESr=DATA;
                                     end
                                 end 
