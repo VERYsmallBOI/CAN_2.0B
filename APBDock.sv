@@ -18,7 +18,7 @@ module APBDock (
     output reg        rd_cmd,      // read_pop
     output reg [ 4:0] PWADDR
 );
-
+  reg done_HSr;
   reg [7:0] REGBANK [28:43];  // 5 registers for reading, index = PADDR/4
   reg       sample_en;
   reg [5:0] PADDRr;           // registered version
@@ -27,9 +27,12 @@ module APBDock (
   reg        write_en, read_en;  // for enabling write and read in apb
   reg        rd_cmd_r;
   reg        changer;
-
+  reg [1:0] State,Stater;
+  reg rd_cmd_rr;
   always @(posedge PCLK or negedge PRESETn) begin
     if (~PRESETn) begin
+      done_HSr<=0;
+      State<=0;
       PREADY      <= 0;
       REGBANK[28] <= 0;
       REGBANK[29] <= 0;
@@ -56,14 +59,15 @@ module APBDock (
       PRDATA      <= 0;
       PWRITEr     <=0;
       PSLVERR     <=0;
-       rd_cmd_r<=0;
+      rd_cmd_rr<=0;
     end else begin
+      State<=Stater;
+      done_HSr<=done_HS;
       if (sample_en) begin
         PADDRr  <= PADDR;
         PWRITEr <= PWRITE;
         PWDATAr <= PWDATA;
       end
-
       PREADY  <= PREADYr;
       change  <= changer;
       PSLVERR <= PSLVERRr;
@@ -117,9 +121,10 @@ module APBDock (
         REGBANK[42] <= FIFO_READ[27:20];  // Byte2 = DATA[23:16]
         REGBANK[43] <= FIFO_READ[35:28];  // Byte3 = DATA[31:24]
       end
-      rd_cmd_r<=(~change&&(PADDRr==24));
-      if (~rd_cmd_r) begin
-        rd_cmd <= PWDATA[0]&&(~change&&(PADDRr==24));
+
+      rd_cmd_rr<=rd_cmd_r;
+      if (rd_cmd_r&&(~rd_cmd_rr)) begin
+        rd_cmd <= PWDATAr[0]&&(PADDRr==24);
       end else begin
         rd_cmd <= 0;
       end
@@ -147,36 +152,101 @@ module APBDock (
     if (PSEL) begin  // chip selected
       if (!PENABLE) begin  // setup
         sample_en = 1;
-        if (PWRITE) begin  // write
-          changer  = 0;
-          PSLVERRr = 0;
-          PREADYr  = 0;  // if more end transaction here
-          write_en = 0;
-          read_en  = 0;
-        end else begin  // read
+        rd_cmd_r = 0;
+        Stater=0;
           // changer = (PADDR > 6'h14 && PADDR < 6'h2D) ? 1 : 0;
           changer  = 0;
           PSLVERRr = 0;
           PREADYr  = 0;  // if more end transaction here
           write_en = 0;
           read_en  = 0;
-        end
+        
       end else begin  // access
         sample_en = 0;
         if (PWRITE) begin  // write
         if(PADDRr<=24)begin
-          PREADYr=((change?done_HS:0)||PREADY||(PADDRr==24));
+          if(PADDRr!=24)begin
+          case(State)
+          0:begin
+            Stater=1;
+            changer=1;
+            PREADYr=0;
+            rd_cmd_r = 0;
+            write_en=1;
+          end
+          1:begin
+            if(done_HS&&~done_HSr)
+            begin
+            Stater=2;
+            changer=0;
+            PREADYr=0;
+            rd_cmd_r = 0;
+            write_en=0;
+          end
+            else begin
+            Stater=1;
+            changer=1;
+            PREADYr=0;
+            write_en=0;
+            rd_cmd_r = 0;
+
+            end
+          end
+          2:begin
+            if(~done_HS&&done_HSr)
+            begin
+              Stater=3;
+              changer=0;
+              PREADYr=1;
+              write_en=0;
+              rd_cmd_r = 0;
+
+            end
+            else begin
+              Stater=2;
+              changer=0;
+              PREADYr=0;
+              write_en=0;
+              rd_cmd_r = 0;
+
+            end
+          end
+            3:begin
+              Stater=0;
+              changer=0;
+              PREADYr=0;
+              write_en=0;
+              rd_cmd_r = 0;
+            end
+          
+          default:begin
+            Stater=0;
+            changer=0;
+            write_en=0;
+            PREADYr=1;
+            rd_cmd_r = 0;
+
+          end
+          endcase
+          end
+          else begin //read pop is a direct write no HS needed
+            changer=0;
+            write_en=0;
+            rd_cmd_r = 1;
+            PREADYr=1;
+            Stater=0;
+          end
           PSLVERRr=0;
-          write_en=~change&&(PADDRr!=24);
-          changer=change?~done_HS:~(PADDRr==24);
           read_en = 0;
         end
         else begin
           read_en=0;
           PSLVERRr=1;
+            rd_cmd_r = 0;
           PREADYr=1;
           write_en=0;
           changer=0;
+          Stater=0;
         end
         end else begin  // read
           PREADYr  = ((PADDRr == 44) ? 1 : ~empty_fifo) || PREADY;     // if checking status direclty give ouput else wait untl fifo go non empry
@@ -185,6 +255,9 @@ module APBDock (
           read_en  = (~empty_fifo && (PADDRr >= 28 && PADDRr <= 40)) || (PADDRr == 44);  // status reg is continouts flowing
           // PREADY && (~empty_fifo || PADDR == 'h2C);
           changer  = 0;
+          Stater=0;
+            rd_cmd_r = 0;
+
         end
       end
     end else begin
@@ -194,6 +267,9 @@ module APBDock (
       changer   = 0;
       PREADYr   = 0;
       sample_en = 0;
+      Stater=0;
+            rd_cmd_r = 0;
+
     end
   end
 

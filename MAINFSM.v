@@ -2,7 +2,7 @@
 //to Differentiate it and disable and enable the Engines.
 //Note : bfrTX=data[Cnt]; So dont make write data same way as ID 
 //Just write ID and Data in reverse order from lsb to msb in apb mode
-module MAINFSM(CAN_CLK,CAN_RST,done_RX,done_TX,RX,TX,PCLK, PRESETn, PSEL, PENABLE, PWRITE, PADDR, PWDATA, PSLVERR, PRDATA, PREADY);
+module MAINFSM(CAN_CLK,CAN_RST,done_RXs,done_TXs,RX,TX,PCLK, PRESETn, PSEL, PENABLE, PWRITE, PADDR, PWDATA, PSLVERR, PRDATA, PREADY);
 //can inputs
 input CAN_CLK,CAN_RST;
 input RX;
@@ -11,7 +11,8 @@ input RX;
 //TIMING regs and 
 //can outptus
 output reg TX;
-output done_TX,done_RX;//interrupts
+//interrupts
+output wire done_RXs,done_TXs;
 wire [2:0]Mode;
 wire        IDE_rec;
 wire        RTR_rec;
@@ -74,6 +75,8 @@ end
 //RXBUS routing pending final end point ised will be RXBUS  start point depends on Mode
 TFF TFF_RXB(.D(RX),.rst(CAN_RST),.clk(Tq),.q(RXBUSs));
 
+TFF done_RX_TFF(.D(done_RX),.rst(PRESETn),.clk(PCLK),.q(done_RXs));
+TFF done_TX_TFF(.D(done_TX),.rst(PRESETn),.clk(PCLK),.q(done_TXs));
 
 // TPROP: legal range 1 to 8 (4 bits)
 assign TPROP_Amender = (TPROP > 4'd8) ? 4'd8 : 
@@ -180,7 +183,7 @@ ErrorHandler err1 (
     .ErrState(ErrState),
     .OvlState(OvlState)
 );
-//pending
+
 APBCDC AC1 (
     .PCLK        (PCLK),
     .PRESETn     (PRESETn),

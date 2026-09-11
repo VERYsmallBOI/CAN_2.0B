@@ -58,8 +58,6 @@ module APBCDC (
     reg        SRSTr;
     reg done_TXr;
     // Internal Wires
-    wire        doner;
-    wire        donew;
     wire        empty_fifo,fifo_full;
     wire        rd_cmd;
     wire [98:0] FIFO_READ;
@@ -130,8 +128,6 @@ FIFO FIFO1 (
     .rdata (FIFO_READ),
     .rcmd  (rd_cmd),
     .wcmd  (wcmd),
-    .doner (doner),
-    .donew (donew),//need to take away
     .full (fifo_full)
 );
 
@@ -185,7 +181,7 @@ if(~CAN_RST)begin
 // TXID is 29 alternating 10s startinf and ending with 1
 // TROP is 4 TSEG1 is 4 TSEG2 is 4 BRP is 8 all the LOOP back =1
 //SJW is 4
-REGBANK_can[0]  <= 8'h04;
+REGBANK_can[0]  <= 8'h00;
 REGBANK_can[1]  <= 8'h44;
 REGBANK_can[2]  <= 8'h44;
 REGBANK_can[3]  <= 8'h04;

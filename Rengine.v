@@ -2,7 +2,6 @@
 //RXBUS is input from 2FF
 //Gives out CNT1 and CNT2 for TRANSMITTER SYNCRONIZATION
 //SEG values and prop are from apb directly
-`default_nettype none
 module Rengine(RXBUS, RXSTATES, TXVALUE, TPROP, TSEG1, TSEG2, Tq, rst, RXOUT, TXen, RXen, SJW);
   localparam IDLE = 0;// pending
   input wire RXBUS, TXVALUE, Tq, rst;

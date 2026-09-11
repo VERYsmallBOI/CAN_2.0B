@@ -1,4 +1,4 @@
-module FIFO(wclk,rclk,wrst,rrst,empty,full,wdata,rdata,rcmd,wcmd,doner,donew);
+module FIFO(wclk,rclk,wrst,rrst,empty,full,wdata,rdata,rcmd,wcmd);
 //pahse bit implementation.
 //instead of sending the whole ptr send change (change indicates +1) and make canclk(write side)by change a bit and sync that onyl and get it to this side(read) only if the change is 1 wil it change to new read ptr vallue
 input wclk,rclk,wrst,rrst,rcmd,wcmd;
@@ -8,7 +8,6 @@ output reg [98:0]rdata;
 reg [98:0]FIFOMEM[15:0];//15 messages
 reg [4:0]wptrr,rptrr;
 wire [4:0]wptrg,rptrg,wptrgs,rptrgs;
-output reg doner,donew;
 output reg empty;
 output reg full;
 reg [4:0]wptrgr,rptrgr;
@@ -59,10 +58,8 @@ end
 always@(*)begin
     if(wcmd&&~full)begin
         wptrr=wptr+1;
-        donew=1;
     end
     else begin
-        donew=0;
         wptrr=wptr;
     end
 end
@@ -94,10 +91,8 @@ end
 always@(*)begin
     if(rcmd&&~empty)begin
         rptrr=rptr+1;
-        doner=1;
     end
     else begin
-        doner=0;
         rptrr=rptr;
     end
 end
