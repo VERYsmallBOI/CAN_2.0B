@@ -1,6 +1,6 @@
 module Prescaler(can_clk, BRP, Tq, rst);
-  input can_clk, rst;
-  input [4:0] BRP;
+  input wire can_clk, rst;
+  input wire [4:0] BRP;
   output reg Tq;
 
   reg [4:0] count, ncount;

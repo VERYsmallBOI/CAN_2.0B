@@ -7,7 +7,7 @@ module Rengine(RXBUS, RXSTATES, TXVALUE, TPROP, TSEG1, TSEG2, Tq, rst, RXOUT, TX
   localparam IDLE = 0;// pending
   input wire RXBUS, TXVALUE, Tq, rst;
   input wire [3:0] TPROP, TSEG1, TSEG2;// 1 to 8
-  input wire [1:0] RXSTATES; //SOF considereation
+  input wire [3:0] RXSTATES; //SOF considereation
   reg [4:0] CNT1;//max is 15 anyway 8+8+1 
   reg [4:0] CNT1r; 
   reg [3:0] CNT2; //it has to go from 7 to 0 anyway

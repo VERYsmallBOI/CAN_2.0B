@@ -8,7 +8,7 @@ reg TXpinr;
 output reg [8:0]TEC,REC;
 reg [8:0]TECr,RECr;
 input [3:0]TXSTATES,RXSTATES;
-output ErrState,OvlState;
+output wire ErrState,OvlState;
 reg [3:0]Cnt,Cntr;
 reg lastvalue;
 reg donefromrxr,donefromtxr;

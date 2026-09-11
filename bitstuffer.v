@@ -4,7 +4,7 @@ module bitstuffer (
     input  wire rst,
     input  wire srst,      // Soft reset
     input  wire pause_in,
-    output  bitout,
+    output wire  bitout,
     output wire pause_out  // Pause signal to hold new data from master
 );
     reg [4:0] serial;

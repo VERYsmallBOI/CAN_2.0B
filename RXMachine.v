@@ -12,8 +12,8 @@
 //Bus overtake shoudl work on TXen
 // sampling(dont register it-breaks timing)/state transisition shoudl work on RXen
 
-module RXMachine(Tq, rst, srst, TOFILTERd, TOFILTERI, RXBUS, D_Len, req_Error, IDE, AckTakeOver, RXen, TXen, RTR, ErrState, OvlState, RXSTATES, done);
-input Tq,rst,RXBUS,srst,RXen,TXen;
+module RXMachine(Tq, rst, srst, TOFILTERd, TOFILTERI, RXBUS, D_Len, req_Error, IDE, AckTakeOver, RXen, TXen, RTR, ErrState, OvlState, RXSTATES, done, imTX);
+input Tq,rst,RXBUS,srst,RXen,TXen,imTX;
 output reg [63:0]TOFILTERd;//to data filetered
 output reg [28:0]TOFILTERI;//to id filter
 output reg req_Error;
@@ -79,7 +79,7 @@ always @(posedge Tq or negedge rst) begin
         if (TXen) begin
             // RX enabled conditions
             if(RXSTATES==CRC_DL)begin//RX will be 1 state behind
-                AckTakeOver<=(req_Errorr||req_Error);
+                AckTakeOver<=(req_Errorr||req_Error)||(imTX);
             end
             else AckTakeOver<=1;
         end
@@ -93,7 +93,7 @@ end
 else if(!srst)begin
 done<=0;
 end
-else if((~req_Errorr&&~req_Error)&&(RXSTATES==EOF)&&(Cnt==0))
+else if((~req_Errorr&&~req_Error)&&(RXSTATES==EOF)&&(Cnt==0)&&(~imTX))
     done<=1;
     else if(RXSTATES>=SOF && RXSTATES<=ACKSL) begin
         done<=0;
