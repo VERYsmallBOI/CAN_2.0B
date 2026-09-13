@@ -1,0 +1,18 @@
+waive -msg {Flip-flop output 'MAINFSM.Tq' used as clock of flip-flop 'MAINFSM.TFF_RXB.q1'}  -rule {  {STARC05-1.4.3.2}  }  -comment {Created by tamilselvan on 13-Sep-2026 18:47:26}
+waive -msg {Flip-flop output 'MAINFSM.Tq' used as clock of flip-flop 'MAINFSM.TFF_RXB.q1'}  -rule {  {STARC05-1.4.3.2}  }  -comment {Syncronous Clk Generation for quanta}
+waive -msg {Flip-flop 'FIFOMEM[15][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[14][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[13][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[12][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[11][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[10][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[9][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[8][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[7][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[6][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[5][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[4][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[3][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[2][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[1][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}
+waive -msg {Flip-flop 'FIFOMEM[0][98:0]' has neither asynchronous set nor asynchronous reset. [Hierarchy: 'MAINFSM.AC1.FIFO1']}  -rule {  {STARC-2.3.4.3}  }  -comment {FIFO memory Async reset Not Possible}

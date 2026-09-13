@@ -1,0 +1,24 @@
+#spyglass desgin contraints
+current_design "MAINFSM"
+
+clock -name CAN_CLK -domain can -period 20 -tag CLOCK_DOMAIN_can -edge {0 10}
+clock -name PCLK -domain apb -period 10 -tag CLOCK_DOMAIN_apb -edge {0 5}
+
+reset -name CAN_RST -value 0
+reset -name PRESETn -value 0
+
+input -name RX -clock CAN_CLK
+output -name TX -clock CAN_CLK
+
+input -name PSEL -clock PCLK
+input -name PENABLE -clock PCLK
+input -name PWRITE -clock PCLK
+input -name PADDR -clock PCLK
+input -name PWDATA -clock PCLK
+
+output -name PREADY -clock PCLK
+output -name PSLVERR -clock PCLK
+output -name PRDATA -clock PCLK
+
+output -name done_RXs -clock PCLK
+output -name done_TXs -clock PCLK

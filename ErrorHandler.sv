@@ -100,7 +100,7 @@ NOERROR:begin
         if((req_Error_TX || req_Error_RX)&&(~ErrState))//new request
         begin
             Stater=(TEC>=256)?RECOVERY:SEND; //if bus off no need to acknowledge that errors given
-            TXpinr=((TEC>127)||(REC>127))?1:0;
+            TXpinr=((TEC>127)||(REC>127))?1'b1:1'b0;
             RECinr=REC;
             TECinr=TEC;
             Cntr=0;
@@ -141,7 +141,7 @@ SEND:begin
         end
     end
     else begin//active error case
-        TXpinr=(Cnt!=5)?0:1;
+        TXpinr=(Cnt!=5)?1'b0:1'b1;
         Cntr=(Cnt!=5)?Cnt+1:0;
         Stater=(Cnt!=5)?SEND:CHECK;
     end
@@ -167,7 +167,7 @@ DL:begin
         end
         else begin
             Stater=(TEC>=256)?RECOVERY:SEND; //if bus off no need to acknowledge that errors given
-            TXpinr=((TEC>127)||(REC>127))?1:0;
+            TXpinr=((TEC>127)||(REC>127))?1'b1:1'b0;
             RECinr=REC;
             TECinr=TEC;
             Cntr=0;
@@ -195,7 +195,7 @@ OVDL:begin
         end
         else begin
             Stater=(TEC>=256)?RECOVERY:SEND; //if bus off no need to acknowledge that errors given
-            TXpinr=((TEC>127)||(REC>127))?1:0;
+            TXpinr=((TEC>127)||(REC>127))?1'b1:1'b0;
             RECinr=REC;
             TECinr=TEC;
             Cntr=0;
@@ -250,7 +250,7 @@ OVFL:begin
     end
     else if(Sampled_din==1)begin
             Stater=(TEC>=256)?RECOVERY:SEND; //if bus off no need to acknowledge that errors given
-            TXpinr=((TEC>127)||(REC>127))?1:0;
+            TXpinr=((TEC>127)||(REC>127))?1'b1:1'b0;
             Cntr=0;
             TECinr=TEC;
             RECinr=REC;

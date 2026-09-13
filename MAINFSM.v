@@ -24,7 +24,7 @@ wire RXBUSs;
 wire Tq,req_Error_TX,req_Error_RX,Sampled_din,TXen,RXen,SRST,ErrState,imTX,TX_from_trans,AckTakeOver,OvlState,TX_from_Err;
 wire [3:0]RXSTATES,TXSTATES;
 wire [8:0]TEC,REC;
-
+wire done_RX,done_TX;
 
 //apb write to this
 //6 x 32 bits 

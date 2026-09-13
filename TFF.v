@@ -1,6 +1,6 @@
 module TFF(D,rst,clk,q);
 input D,rst,clk;
-
+wire q1;
 output q;
 dff d1(D,rst,clk,q1);
 dff d2(q1,rst,clk,q);
