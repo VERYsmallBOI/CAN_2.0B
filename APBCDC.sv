@@ -304,27 +304,11 @@ TFF ERRORP_tff(.D(ERRORP),.clk(PCLK),.rst(PRESETn),.q(ERRORPs));
 TFF TXIDLE_tff(.D(TX_IDLE),.clk(PCLK),.rst(PRESETn),.q(TX_IDLEs));
 
 //b2g TEC and REC bfr sneding
-// TEC (Total Error Count) - 10 instances (0 to 9)
-b2g9 TEC_b2g_0 (.in1(TEC[0]), .out1(TECg[0]));
-b2g9 TEC_b2g_1 (.in1(TEC[1]), .out1(TECg[1]));
-b2g9 TEC_b2g_2 (.in1(TEC[2]), .out1(TECg[2]));
-b2g9 TEC_b2g_3 (.in1(TEC[3]), .out1(TECg[3]));
-b2g9 TEC_b2g_4 (.in1(TEC[4]), .out1(TECg[4]));
-b2g9 TEC_b2g_5 (.in1(TEC[5]), .out1(TECg[5]));
-b2g9 TEC_b2g_6 (.in1(TEC[6]), .out1(TECg[6]));
-b2g9 TEC_b2g_7 (.in1(TEC[7]), .out1(TECg[7]));
-b2g9 TEC_b2g_8 (.in1(TEC[8]), .out1(TECg[8]));
+// TEC (Total Error Count) 
+b2g9 TEC_b2g (.in1(TEC), .out1(TECg));
 
-// REC (Receive Error Count) - 10 instances (0 to 9)
-b2g9 REC_b2g_0 (.in1(REC[0]), .out1(RECg[0]));
-b2g9 REC_b2g_1 (.in1(REC[1]), .out1(RECg[1]));
-b2g9 REC_b2g_2 (.in1(REC[2]), .out1(RECg[2]));
-b2g9 REC_b2g_3 (.in1(REC[3]), .out1(RECg[3]));
-b2g9 REC_b2g_4 (.in1(REC[4]), .out1(RECg[4]));
-b2g9 REC_b2g_5 (.in1(REC[5]), .out1(RECg[5]));
-b2g9 REC_b2g_6 (.in1(REC[6]), .out1(RECg[6]));
-b2g9 REC_b2g_7 (.in1(REC[7]), .out1(RECg[7]));
-b2g9 REC_b2g_8 (.in1(REC[8]), .out1(RECg[8]));
+// REC (Receive Error Count) 
+b2g9 REC_b2g_0 (.in1(REC), .out1(RECg));
 
 //TEC and REC sync
 TFF TECtff0(.D(TECg[0]), .rst(PRESETn), .clk(PCLK), .q(TECs[0]));
@@ -349,26 +333,10 @@ TFF RECtff8(.D(RECg[8]), .rst(PRESETn), .clk(PCLK), .q(RECs[8]));
 
 
 // REC (0 to 8)
-g2b9 REC_g2b9_0 (.in1(RECs[0]), .out1(RECb[0]));
-g2b9 REC_g2b9_1 (.in1(RECs[1]), .out1(RECb[1]));
-g2b9 REC_g2b9_2 (.in1(RECs[2]), .out1(RECb[2]));
-g2b9 REC_g2b9_3 (.in1(RECs[3]), .out1(RECb[3]));
-g2b9 REC_g2b9_4 (.in1(RECs[4]), .out1(RECb[4]));
-g2b9 REC_g2b9_5 (.in1(RECs[5]), .out1(RECb[5]));
-g2b9 REC_g2b9_6 (.in1(RECs[6]), .out1(RECb[6]));
-g2b9 REC_g2b9_7 (.in1(RECs[7]), .out1(RECb[7]));
-g2b9 REC_g2b9_8 (.in1(RECs[8]), .out1(RECb[8]));
+g2b9 REC_g2b9 (.in1(RECs), .out1(RECb));
 
 // TEC (0 to 8)
-g2b9 TEC_g2b9_0 (.in1(TECs[0]), .out1(TECb[0]));
-g2b9 TEC_g2b9_1 (.in1(TECs[1]), .out1(TECb[1]));
-g2b9 TEC_g2b9_2 (.in1(TECs[2]), .out1(TECb[2]));
-g2b9 TEC_g2b9_3 (.in1(TECs[3]), .out1(TECb[3]));
-g2b9 TEC_g2b9_4 (.in1(TECs[4]), .out1(TECb[4]));
-g2b9 TEC_g2b9_5 (.in1(TECs[5]), .out1(TECb[5]));
-g2b9 TEC_g2b9_6 (.in1(TECs[6]), .out1(TECb[6]));
-g2b9 TEC_g2b9_7 (.in1(TECs[7]), .out1(TECb[7]));
-g2b9 TEC_g2b9_8 (.in1(TECs[8]), .out1(TECb[8]));
+g2b9 TEC_g2b9_0 (.in1(TECs), .out1(TECb));
 
 //  //\ /\\
 //  \\/ \//

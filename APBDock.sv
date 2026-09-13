@@ -153,7 +153,62 @@ module APBDock (
   end
 
   always @(*) begin
-    if (PSEL) begin  // chip selected
+    if(State!=0)begin
+                PSLVERRr=0;
+          read_en = 0;
+          sample_en=0;
+        if(State==1)begin
+            if(done_HS&&~done_HSr)
+            begin
+            Stater=2;
+            changer=0;
+            PREADYr=0;
+            rd_cmd_r = 0;
+            write_en=0;
+          end
+            else begin
+            Stater=1;
+            changer=1;
+            PREADYr=0;
+            write_en=0;
+            rd_cmd_r = 0;
+            end
+          end
+        else if(State==2)begin
+            if(~done_HS&&done_HSr)
+            begin
+              Stater=3;
+              changer=0;
+              PREADYr=1;
+              write_en=0;
+              rd_cmd_r = 0;
+            end
+            else begin
+              Stater=2;
+              changer=0;
+              PREADYr=0;
+              write_en=0;
+              rd_cmd_r = 0;
+            end
+          end
+          else if(State==3)begin
+              Stater=0;
+              changer=0;
+              PREADYr=0;
+              write_en=0;
+              rd_cmd_r = 0;
+            end
+            else begin
+            Stater=0;
+            changer=0;
+            write_en=0;
+            PREADYr=0;
+            rd_cmd_r = 0;
+          end
+
+    end
+
+    else  if (PSEL) begin  // chip selected
       if (!PENABLE) begin  // setup
         sample_en = 1;
         rd_cmd_r = 0;
@@ -170,68 +225,13 @@ module APBDock (
         if (PWRITE) begin  // write
         if(PADDRr<=24)begin
           if(PADDRr!=24)begin
-          case(State)
-          0:begin
+
             Stater=1;
             changer=1;
             PREADYr=0;
             rd_cmd_r = 0;
             write_en=1;
-          end
-          1:begin
-            if(done_HS&&~done_HSr)
-            begin
-            Stater=2;
-            changer=0;
-            PREADYr=0;
-            rd_cmd_r = 0;
-            write_en=0;
-          end
-            else begin
-            Stater=1;
-            changer=1;
-            PREADYr=0;
-            write_en=0;
-            rd_cmd_r = 0;
-
-            end
-          end
-          2:begin
-            if(~done_HS&&done_HSr)
-            begin
-              Stater=3;
-              changer=0;
-              PREADYr=1;
-              write_en=0;
-              rd_cmd_r = 0;
-
-            end
-            else begin
-              Stater=2;
-              changer=0;
-              PREADYr=0;
-              write_en=0;
-              rd_cmd_r = 0;
-
-            end
-          end
-            3:begin
-              Stater=0;
-              changer=0;
-              PREADYr=0;
-              write_en=0;
-              rd_cmd_r = 0;
-            end
           
-          default:begin
-            Stater=0;
-            changer=0;
-            write_en=0;
-            PREADYr=1;
-            rd_cmd_r = 0;
-
-          end
-          endcase
           end
           else begin //read pop is a direct write no HS needed
             changer=0;
@@ -261,7 +261,6 @@ module APBDock (
           changer  = 0;
           Stater=0;
             rd_cmd_r = 0;
-
         end
       end
     end else begin
@@ -273,7 +272,6 @@ module APBDock (
       sample_en = 0;
       Stater=0;
             rd_cmd_r = 0;
-
     end
   end
 
