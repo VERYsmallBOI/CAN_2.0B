@@ -133,7 +133,8 @@ module APBDock (
         // change <= done_HS ? : ; // pending on what values to be sent as HS
         TXBUFFER <= PWDATAr;
         PWADDR   <= PADDRr[4:0];
-      end else if (PWRITEr == 0 && read_en) begin  // read
+      end 
+       if (read_en) begin  // read
         if (PADDRr == 44) begin
           PRDATA <= {STATUS_F, 8'b0};
         end else begin
@@ -144,6 +145,9 @@ module APBDock (
             REGBANK[PADDRr]
           };
         end
+      end
+      else begin
+        PRDATA<=0;
       end
     end
   end
@@ -249,8 +253,8 @@ module APBDock (
           Stater=0;
         end
         end else begin  // read
-          PREADYr  = ((PADDRr == 44) ? 1 : ~empty_fifo) || PREADY;     // if checking status direclty give ouput else wait untl fifo go non empry
-          PSLVERRr = (PADDRr < 28 || PADDRr > 44);                     // btw the range of read
+          PREADYr  = 1;     // if checking status direclty give ouput else wait untl fifo go non empry
+          PSLVERRr = (PADDRr < 28 || PADDRr > 44) || (empty_fifo);                     // btw the range of read
           write_en = 0;
           read_en  = (~empty_fifo && (PADDRr >= 28 && PADDRr <= 40)) || (PADDRr == 44);  // status reg is continouts flowing
           // PREADY && (~empty_fifo || PADDR == 'h2C);

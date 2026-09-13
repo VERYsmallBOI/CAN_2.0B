@@ -25,7 +25,7 @@ module APBCDC (
     output wire [2:0]  Mode,         // {Loopback, Listen_Only, Soft_Reset}
 
     // Transmit Interface
-    output wire        TRANSMIT,
+    output reg        TRANSMIT,
     input  wire [3:0]  TXSTATES,
     output wire        RTR_TX,
     output wire        IDE_TX,
@@ -75,7 +75,6 @@ assign IDE_TX = REGBANK_can[8][4];
 assign D_Len_TX = REGBANK_can[8][3:0];
 
 // TXREQ @ offset 20
-assign TRANSMIT = REGBANK_can[20][0];
 assign SJW   = REGBANK_can[3][2:0];
 assign TPROP = REGBANK_can[2][7:4];
 assign TSEG2 = REGBANK_can[2][3:0];
@@ -172,6 +171,7 @@ if(~CAN_RST)begin
    done_HS_CAN<=0;
    change_can_r<=0;
    done_TXr<=0;
+   TRANSMIT<=0;
    // TXREQ is 0 all the way
 // TXDATAL and DATAH is 0
 
@@ -213,7 +213,7 @@ REGBANK_can[23] <= 8'h00;
 PWADDR_can<=0;
 Cnt_srst<=0;
 TXBUFFER_can<=0;
-SRST<=0;
+SRST<=1;
 end
 else begin
     done_TXr<=done_TX;
@@ -241,8 +241,14 @@ else if(change_can==0 && change_can_r==1)   begin//deassert
             REGBANK_can[5'(PWADDR_can+3)]<=TXBUFFER_can[31:24];
         end
     end
+    else begin
+        REGBANK_can[20]<=0;
+    end
+    if(REGBANK_can[20]==8'b1)begin
+        TRANSMIT<=1;
+    end
     else if(done_TXr==0 && done_TX==1) begin
-            REGBANK_can[20]<=0;
+        TRANSMIT<=0;
     end
 
 end
@@ -250,17 +256,17 @@ end
 
 always@(*)begin
 if(~change_can && change_can_r && PWADDR_can<4 && (TXSTATES==TXIDLE))begin //all timing and mode regs
-SRSTr=1;
+SRSTr=0;
 Cnt_srstr=2;
 end
 else begin
 if(Cnt_srst!=0)
 begin
     Cnt_srstr=Cnt_srst-1;
-    SRSTr=1;
+    SRSTr=0;
 end
 else begin
-    SRSTr=0;
+    SRSTr=1;
     Cnt_srstr=0;
 end
 end
@@ -270,7 +276,7 @@ end
 
 //STATUS_F construction
 reg BUSOFF,BUSOFFr,ERRORP,ERRORPr,TX_IDLE,TX_IDLEr;
-wire [8:0]TECs,RECs;
+wire [8:0]TECs,RECs,TECg,RECg,RECb,TECb;
 wire BUSOFFs,ERRORPs,TX_IDLEs;
 
 always@(*)begin
@@ -297,33 +303,106 @@ TFF BUSOFF_tff(.D(BUSOFF),.clk(PCLK),.rst(PRESETn),.q(BUSOFFs));
 TFF ERRORP_tff(.D(ERRORP),.clk(PCLK),.rst(PRESETn),.q(ERRORPs));
 TFF TXIDLE_tff(.D(TX_IDLE),.clk(PCLK),.rst(PRESETn),.q(TX_IDLEs));
 
+//b2g TEC and REC bfr sneding
+// TEC (Total Error Count) - 10 instances (0 to 9)
+b2g9 TEC_b2g_0 (.in1(TEC[0]), .out1(TECg[0]));
+b2g9 TEC_b2g_1 (.in1(TEC[1]), .out1(TECg[1]));
+b2g9 TEC_b2g_2 (.in1(TEC[2]), .out1(TECg[2]));
+b2g9 TEC_b2g_3 (.in1(TEC[3]), .out1(TECg[3]));
+b2g9 TEC_b2g_4 (.in1(TEC[4]), .out1(TECg[4]));
+b2g9 TEC_b2g_5 (.in1(TEC[5]), .out1(TECg[5]));
+b2g9 TEC_b2g_6 (.in1(TEC[6]), .out1(TECg[6]));
+b2g9 TEC_b2g_7 (.in1(TEC[7]), .out1(TECg[7]));
+b2g9 TEC_b2g_8 (.in1(TEC[8]), .out1(TECg[8]));
+
+// REC (Receive Error Count) - 10 instances (0 to 9)
+b2g9 REC_b2g_0 (.in1(REC[0]), .out1(RECg[0]));
+b2g9 REC_b2g_1 (.in1(REC[1]), .out1(RECg[1]));
+b2g9 REC_b2g_2 (.in1(REC[2]), .out1(RECg[2]));
+b2g9 REC_b2g_3 (.in1(REC[3]), .out1(RECg[3]));
+b2g9 REC_b2g_4 (.in1(REC[4]), .out1(RECg[4]));
+b2g9 REC_b2g_5 (.in1(REC[5]), .out1(RECg[5]));
+b2g9 REC_b2g_6 (.in1(REC[6]), .out1(RECg[6]));
+b2g9 REC_b2g_7 (.in1(REC[7]), .out1(RECg[7]));
+b2g9 REC_b2g_8 (.in1(REC[8]), .out1(RECg[8]));
 
 //TEC and REC sync
-TFF TECtff0(.D(TEC[0]), .rst(PRESETn), .clk(PCLK), .q(TECs[0]));
-TFF TECtff1(.D(TEC[1]), .rst(PRESETn), .clk(PCLK), .q(TECs[1]));
-TFF TECtff2(.D(TEC[2]), .rst(PRESETn), .clk(PCLK), .q(TECs[2]));
-TFF TECtff3(.D(TEC[3]), .rst(PRESETn), .clk(PCLK), .q(TECs[3]));
-TFF TECtff4(.D(TEC[4]), .rst(PRESETn), .clk(PCLK), .q(TECs[4]));
-TFF TECtff5(.D(TEC[5]), .rst(PRESETn), .clk(PCLK), .q(TECs[5]));
-TFF TECtff6(.D(TEC[6]), .rst(PRESETn), .clk(PCLK), .q(TECs[6]));
-TFF TECtff7(.D(TEC[7]), .rst(PRESETn), .clk(PCLK), .q(TECs[7]));
-TFF TECtff8(.D(TEC[8]), .rst(PRESETn), .clk(PCLK), .q(TECs[8]));
+TFF TECtff0(.D(TECg[0]), .rst(PRESETn), .clk(PCLK), .q(TECs[0]));
+TFF TECtff1(.D(TECg[1]), .rst(PRESETn), .clk(PCLK), .q(TECs[1]));
+TFF TECtff2(.D(TECg[2]), .rst(PRESETn), .clk(PCLK), .q(TECs[2]));
+TFF TECtff3(.D(TECg[3]), .rst(PRESETn), .clk(PCLK), .q(TECs[3]));
+TFF TECtff4(.D(TECg[4]), .rst(PRESETn), .clk(PCLK), .q(TECs[4]));
+TFF TECtff5(.D(TECg[5]), .rst(PRESETn), .clk(PCLK), .q(TECs[5]));
+TFF TECtff6(.D(TECg[6]), .rst(PRESETn), .clk(PCLK), .q(TECs[6]));
+TFF TECtff7(.D(TECg[7]), .rst(PRESETn), .clk(PCLK), .q(TECs[7]));
+TFF TECtff8(.D(TECg[8]), .rst(PRESETn), .clk(PCLK), .q(TECs[8]));
 
-TFF RECtff0(.D(REC[0]), .rst(PRESETn), .clk(PCLK), .q(RECs[0]));
-TFF RECtff1(.D(REC[1]), .rst(PRESETn), .clk(PCLK), .q(RECs[1]));
-TFF RECtff2(.D(REC[2]), .rst(PRESETn), .clk(PCLK), .q(RECs[2]));
-TFF RECtff3(.D(REC[3]), .rst(PRESETn), .clk(PCLK), .q(RECs[3]));
-TFF RECtff4(.D(REC[4]), .rst(PRESETn), .clk(PCLK), .q(RECs[4]));
-TFF RECtff5(.D(REC[5]), .rst(PRESETn), .clk(PCLK), .q(RECs[5]));
-TFF RECtff6(.D(REC[6]), .rst(PRESETn), .clk(PCLK), .q(RECs[6]));
-TFF RECtff7(.D(REC[7]), .rst(PRESETn), .clk(PCLK), .q(RECs[7]));
-TFF RECtff8(.D(REC[8]), .rst(PRESETn), .clk(PCLK), .q(RECs[8]));
+TFF RECtff0(.D(RECg[0]), .rst(PRESETn), .clk(PCLK), .q(RECs[0]));
+TFF RECtff1(.D(RECg[1]), .rst(PRESETn), .clk(PCLK), .q(RECs[1]));
+TFF RECtff2(.D(RECg[2]), .rst(PRESETn), .clk(PCLK), .q(RECs[2]));
+TFF RECtff3(.D(RECg[3]), .rst(PRESETn), .clk(PCLK), .q(RECs[3]));
+TFF RECtff4(.D(RECg[4]), .rst(PRESETn), .clk(PCLK), .q(RECs[4]));
+TFF RECtff5(.D(RECg[5]), .rst(PRESETn), .clk(PCLK), .q(RECs[5]));
+TFF RECtff6(.D(RECg[6]), .rst(PRESETn), .clk(PCLK), .q(RECs[6]));
+TFF RECtff7(.D(RECg[7]), .rst(PRESETn), .clk(PCLK), .q(RECs[7]));
+TFF RECtff8(.D(RECg[8]), .rst(PRESETn), .clk(PCLK), .q(RECs[8]));
+
+
+// REC (0 to 8)
+g2b9 REC_g2b9_0 (.in1(RECs[0]), .out1(RECb[0]));
+g2b9 REC_g2b9_1 (.in1(RECs[1]), .out1(RECb[1]));
+g2b9 REC_g2b9_2 (.in1(RECs[2]), .out1(RECb[2]));
+g2b9 REC_g2b9_3 (.in1(RECs[3]), .out1(RECb[3]));
+g2b9 REC_g2b9_4 (.in1(RECs[4]), .out1(RECb[4]));
+g2b9 REC_g2b9_5 (.in1(RECs[5]), .out1(RECb[5]));
+g2b9 REC_g2b9_6 (.in1(RECs[6]), .out1(RECb[6]));
+g2b9 REC_g2b9_7 (.in1(RECs[7]), .out1(RECb[7]));
+g2b9 REC_g2b9_8 (.in1(RECs[8]), .out1(RECb[8]));
+
+// TEC (0 to 8)
+g2b9 TEC_g2b9_0 (.in1(TECs[0]), .out1(TECb[0]));
+g2b9 TEC_g2b9_1 (.in1(TECs[1]), .out1(TECb[1]));
+g2b9 TEC_g2b9_2 (.in1(TECs[2]), .out1(TECb[2]));
+g2b9 TEC_g2b9_3 (.in1(TECs[3]), .out1(TECb[3]));
+g2b9 TEC_g2b9_4 (.in1(TECs[4]), .out1(TECb[4]));
+g2b9 TEC_g2b9_5 (.in1(TECs[5]), .out1(TECb[5]));
+g2b9 TEC_g2b9_6 (.in1(TECs[6]), .out1(TECb[6]));
+g2b9 TEC_g2b9_7 (.in1(TECs[7]), .out1(TECb[7]));
+g2b9 TEC_g2b9_8 (.in1(TECs[8]), .out1(TECb[8]));
+
 //  //\ /\\
 //  \\/ \//
 
 //always@(*)begin
-  assign  STATUS_F={BUSOFFs,ERRORPs,empty_fifo,TX_IDLEs,2'b0,RECs,TECs};
+  assign  STATUS_F={BUSOFFs,ERRORPs,empty_fifo,TX_IDLEs,2'b0,RECb,TECb};
 //end
 
+
+endmodule
+
+module b2g9(in1,out1);
+input [8:0]in1;
+output reg [8:0]out1;
+
+always@(*)begin
+out1=in1^{1'b0,in1[8:1]};
+end
+endmodule
+
+module g2b9 (
+    input  [8:0] in1,  // 9-bit Gray code input
+    output [8:0] out1  // 9-bit Binary output
+);
+
+    // Using bitwise vector right-shift with XOR reduction
+    assign out1[8] = in1[8];
+    assign out1[7] = in1[8] ^ in1[7];
+    assign out1[6] = in1[8] ^ in1[7] ^ in1[6];
+    assign out1[5] = in1[8] ^ in1[7] ^ in1[6] ^ in1[5];
+    assign out1[4] = in1[8] ^ in1[7] ^ in1[6] ^ in1[5] ^ in1[4];
+    assign out1[3] = in1[8] ^ in1[7] ^ in1[6] ^ in1[5] ^ in1[4] ^ in1[3];
+    assign out1[2] = in1[8] ^ in1[7] ^ in1[6] ^ in1[5] ^ in1[4] ^ in1[3] ^ in1[2];
+    assign out1[1] = in1[8] ^ in1[7] ^ in1[6] ^ in1[5] ^ in1[4] ^ in1[3] ^ in1[2] ^ in1[1];
+    assign out1[0] = ^in1; // XOR reduction of all bits for LSB
 
 endmodule
