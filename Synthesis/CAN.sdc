@@ -1,3 +1,4 @@
+#16MHz for CAN_CLK and 64 MHz for PCLK
 create_clock -period 62.5 [get_ports CAN_CLK]
 create_clock -period 15.625 [get_ports PCLK]
 #same values are used cos they are the same chip and most likely the can osc is actaully near to the chip instead of cpu

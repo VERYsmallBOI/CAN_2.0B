@@ -1,0 +1,8 @@
+report_units
+report_design
+report_timing -delay_type max
+report_timing -delay_type min
+report_area
+report_case_analysis
+report_min_pulse_width -all_violators
+report_power

@@ -1,0 +1,215 @@
+SIM
+0 Conjunction: 2 nodes.
+1 Sync: both similarly timed.
+2 Transmit: one node gets signal.
+3 Probe: node without transmit checked for received values.
+4 Pop: value removed later.
+5 Illegal read: illegal read done.
+# vsim tb_MAINFSM_2NODE 
+# Start time: 23:39:16 on Sep 13,2026
+# Loading sv_std.std
+# Loading work.tb_MAINFSM_2NODE
+# Loading work.MAINFSM
+# Loading work.TFF
+# Loading work.dff
+# Loading work.TXMachine
+# Loading work.bitstuffer
+# Loading work.CRC
+# Loading work.Prescaler
+# Loading work.Rengine
+# Loading work.RXMachine
+# Loading work.ErrorHandler
+# Loading work.APBCDC
+# Loading work.FIFO
+# Loading work.b2g
+# Loading work.APBDock
+# Loading work.b2g9
+# Loading work.g2b9
+add wave -r sim:/tb_MAINFSM_2NODE/*
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: Tamil  Hostname: CLANKER  ProcessID: 11168
+#           Attempting to use alternate WLF file "./wlfti53gnz".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlfti53gnz
+run -all
+# [13000] N1:TXST=0 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=0 dRx2=0
+# [233000] N1:TXST=0 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=0
+# 
+# =================================================
+#   2-Node CAN Test â Node1 transmits, Node2 receives
+# =================================================
+# 
+# --- STEP 1: timing config @ 0 (both) ---
+# [2575000] APB WR (both) addr=0 data=0x02121080
+# 
+# --- STEP 2: TXDATAL @ 16 (both) ---
+# [23055000] APB WR (both) addr=16 data=0x4b435546
+# 
+# --- STEP 3: TXID @ 4 (both) ---
+# [43535000] APB WR (both) addr=4 data=0x15465543
+# 
+# --- STEP 4: TXCTRL @ 8 (both) ---
+# [64015000] APB WR (both) addr=8 data=0x00000014
+# 
+# --- STEP 5: TXREQ @ 20 (Node1 ONLY) ---
+# [84495000] APB WR (Node1 only) addr=20 data=0x00000001
+# 
+# [84495000] TXREQ sent to Node1. Waiting for frame + ACK...
+# [84633000] N1:TXST=1 RXST=0 | N2:TXST=0 RXST=0 | TX1=0 TX2=1 RX=0 | dTx1=1 dRx1=0 dTx2=1 dRx2=0
+# [84873000] N1:TXST=1 RXST=1 | N2:TXST=0 RXST=1 | TX1=0 TX2=1 RX=0 | dTx1=1 dRx1=0 dTx2=1 dRx2=0
+# [85113000] N1:TXST=1 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=1 dRx1=0 dTx2=1 dRx2=0
+# [85193000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [85513000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [85833000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [86153000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [86473000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [86793000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [87113000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [87433000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [88393000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [89673000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [90313000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [90633000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [90953000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [91273000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [91593000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [91913000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [92233000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [92553000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [92873000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [93193000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [94473000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [95113000] N1:TXST=2 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [95353000] N1:TXST=2 RXST=3 | N2:TXST=0 RXST=3 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [95433000] N1:TXST=3 RXST=3 | N2:TXST=0 RXST=3 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [96393000] N1:TXST=3 RXST=3 | N2:TXST=0 RXST=3 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [96713000] N1:TXST=3 RXST=3 | N2:TXST=0 RXST=3 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [97273000] N1:TXST=3 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [97353000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [97673000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [97993000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [98633000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [98953000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [99273000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [99913000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [100233000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [100553000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [101833000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [102473000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [102793000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [103113000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [103433000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [103753000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [104073000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [104393000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [104713000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [105033000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [105353000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [105673000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [106633000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [107273000] N1:TXST=4 RXST=4 | N2:TXST=0 RXST=4 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [107513000] N1:TXST=4 RXST=5 | N2:TXST=0 RXST=5 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [107593000] N1:TXST=5 RXST=5 | N2:TXST=0 RXST=5 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [108553000] N1:TXST=5 RXST=5 | N2:TXST=0 RXST=5 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [108873000] N1:TXST=5 RXST=5 | N2:TXST=0 RXST=5 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [109193000] N1:TXST=5 RXST=5 | N2:TXST=0 RXST=5 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [109513000] N1:TXST=5 RXST=5 | N2:TXST=0 RXST=5 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [109833000] N1:TXST=5 RXST=5 | N2:TXST=0 RXST=5 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [111433000] N1:TXST=5 RXST=5 | N2:TXST=0 RXST=5 | TX1=0 TX2=1 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [111753000] N1:TXST=5 RXST=5 | N2:TXST=0 RXST=5 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [112633000] N1:TXST=5 RXST=6 | N2:TXST=0 RXST=6 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [112713000] N1:TXST=6 RXST=6 | N2:TXST=0 RXST=6 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [112953000] N1:TXST=6 RXST=7 | N2:TXST=0 RXST=7 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [113033000] N1:TXST=7 RXST=7 | N2:TXST=0 RXST=7 | TX1=1 TX2=0 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [113273000] N1:TXST=7 RXST=8 | N2:TXST=0 RXST=8 | TX1=1 TX2=0 RX=0 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [113353000] N1:TXST=8 RXST=8 | N2:TXST=0 RXST=8 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [113593000] N1:TXST=8 RXST=9 | N2:TXST=0 RXST=9 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [113673000] N1:TXST=9 RXST=9 | N2:TXST=0 RXST=9 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=0
+# [115593000] N1:TXST=9 RXST=9 | N2:TXST=0 RXST=9 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=1
+# [115833000] N1:TXST=9 RXST=10 | N2:TXST=0 RXST=10 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=1 dRx2=1
+# [115913000] N1:TXST=10 RXST=10 | N2:TXST=0 RXST=10 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=1
+# [116473000] N1:TXST=10 RXST=11 | N2:TXST=0 RXST=11 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=1
+# [116793000] N1:TXST=10 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=1
+# [116873000] N1:TXST=0 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=1
+# 
+# =================================================
+#   [124493000]  Final State Dump
+# =================================================
+#   --- Node 1 (transmitter) ---
+#     TXSTATES    = 0
+#     RXSTATES    = 0
+#     TX pin (TX1)= 1
+#     done_TXs1   = 1
+#     done_RXs1   = 0
+#     TEC         = 0x000
+#     REC         = 0x000
+#     imTX        = 0
+#     req_Error_TX= 0
+#     req_Error_RX= 0
+# 
+#   --- Node 2 (receiver) ---
+#     TXSTATES    = 0
+#     RXSTATES    = 0
+#     TX pin (TX2)= 1
+#     done_TXs2   = 1
+#     done_RXs2   = 1
+#     TEC         = 0x000
+#     REC         = 0x000
+#     imTX        = 0
+#     req_Error_TX= 0
+#     req_Error_RX= 0
+#     TOFILTERd   = 0x0000000000000000
+#     TOFILTERI   = 0x00000000
+#     D_Len_rec   = 0
+#     IDE_rec     = 0
+#     RTR_rec     = 1
+# 
+#   --- Shared Bus ---
+#     TX1 = 1
+#     TX2 = 1
+#     RX  = 1  (RX = TX1 & TX2)
+#     Tq ticks = 1531
+# =================================================
+# 
+# =================================================
+#   APB Register Reads: addr 40, 28, 32 (decimal)
+# =================================================
+# [124535000] APB RD (both) addr=40 (0x28) : Node1=0x00000000  Node2=0x4b435546
+# [124685000] APB RD (both) addr=28 (0x1c) : Node1=0x00000000  Node2=0x15465543
+# [124835000] APB RD (both) addr=32 (0x20) : Node1=0x00000000  Node2=0x00000014
+# 
+# =================================================
+#   APB Write: RXFIFO_POP @ 24 (PWDATA=0x00000001)
+# =================================================
+# [124985000] APB WR (both) addr=24 data=0x00000001
+# 
+# --- Resetting monitor prev regs (force full reprint) ---
+# [125093000] N1:TXST=0 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=1
+# 
+# =================================================
+#   APB Read @ 28 after RXFIFO_POP
+# =================================================
+# [129115000] APB RD (both) addr=28 (0x1c) : Node1=0x00000000  Node2=0x00000000
+# 
+# =================================================
+#   APB Signal Snapshot (all APB signals)
+# =================================================
+#   PSEL1    = 0
+#   PSEL2    = 0
+#   PENABLE  = 0
+#   PWRITE   = 0
+#   PADDR    = 0x00 (0)
+#   PWDATA   = 0x00000000
+#   PREADY1  = 0
+#   PREADY2  = 0
+#   PSLVERR1 = 0
+#   PSLVERR2 = 0
+#   PRDATA1  = 0x00000000
+#   PRDATA2  = 0x00000000
+# =================================================
+# ** Note: $finish    : ./MAINFSMTB.sv(446)
+#    Time: 131115 ns  Iteration: 1  Instance: /tb_MAINFSM_2NODE
+# 1
+# Break in Module tb_MAINFSM_2NODE at ./MAINFSMTB.sv line 446
+
+
