@@ -1,12 +1,5 @@
-SIM
-0 Conjunction: 2 nodes.
-1 Sync: both similarly timed.
-2 Transmit: one node gets signal.
-3 Probe: node without transmit checked for received values.
-4 Pop: value removed later.
-5 Illegal read: illegal read done.
 # vsim tb_MAINFSM_2NODE 
-# Start time: 23:39:16 on Sep 13,2026
+# Start time: 15:31:41 on Sep 14,2026
 # Loading sv_std.std
 # Loading work.tb_MAINFSM_2NODE
 # Loading work.MAINFSM
@@ -27,34 +20,35 @@ SIM
 # Loading work.g2b9
 add wave -r sim:/tb_MAINFSM_2NODE/*
 # ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
-#           File in use by: Tamil  Hostname: CLANKER  ProcessID: 11168
-#           Attempting to use alternate WLF file "./wlfti53gnz".
+#           File in use by: Tamil  Hostname: CLANKER  ProcessID: 34736
+#           Attempting to use alternate WLF file "./wlftz5se43".
 # ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
-#           Using alternate file: ./wlfti53gnz
+#           Using alternate file: ./wlftz5se43
 run -all
 # [13000] N1:TXST=0 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=0 dRx1=0 dTx2=0 dRx2=0
 # [233000] N1:TXST=0 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=0
 # 
 # =================================================
-#   2-Node CAN Test â Node1 transmits, Node2 receives
+#   2-Node CAN Test
+#   Node1 transmits, Node2 receives
 # =================================================
 # 
 # --- STEP 1: timing config @ 0 (both) ---
-# [2575000] APB WR (both) addr=0 data=0x02121080
+# [2570000] APB WR BOTH : addr=0 data=0x02121080
 # 
 # --- STEP 2: TXDATAL @ 16 (both) ---
-# [23055000] APB WR (both) addr=16 data=0x4b435546
+# [23050000] APB WR BOTH : addr=16 data=0x4b435546
 # 
 # --- STEP 3: TXID @ 4 (both) ---
-# [43535000] APB WR (both) addr=4 data=0x15465543
+# [43530000] APB WR BOTH : addr=4 data=0x15465543
 # 
 # --- STEP 4: TXCTRL @ 8 (both) ---
-# [64015000] APB WR (both) addr=8 data=0x00000014
+# [64010000] APB WR BOTH : addr=8 data=0x00000014
 # 
 # --- STEP 5: TXREQ @ 20 (Node1 ONLY) ---
-# [84495000] APB WR (Node1 only) addr=20 data=0x00000001
+# [84490000] APB WR NODE1: addr=20 data=0x00000001
 # 
-# [84495000] TXREQ sent to Node1. Waiting for frame + ACK...
+# [84490000] TXREQ sent to Node1. Waiting for frame + ACK...
 # [84633000] N1:TXST=1 RXST=0 | N2:TXST=0 RXST=0 | TX1=0 TX2=1 RX=0 | dTx1=1 dRx1=0 dTx2=1 dRx2=0
 # [84873000] N1:TXST=1 RXST=1 | N2:TXST=0 RXST=1 | TX1=0 TX2=1 RX=0 | dTx1=1 dRx1=0 dTx2=1 dRx2=0
 # [85113000] N1:TXST=1 RXST=2 | N2:TXST=0 RXST=2 | TX1=0 TX2=1 RX=0 | dTx1=1 dRx1=0 dTx2=1 dRx2=0
@@ -133,66 +127,67 @@ run -all
 # [116873000] N1:TXST=0 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=1
 # 
 # =================================================
-#   [124493000]  Final State Dump
+#   [124473000] Final State Dump
 # =================================================
 #   --- Node 1 (transmitter) ---
-#     TXSTATES    = 0
-#     RXSTATES    = 0
-#     TX pin (TX1)= 1
-#     done_TXs1   = 1
-#     done_RXs1   = 0
-#     TEC         = 0x000
-#     REC         = 0x000
-#     imTX        = 0
-#     req_Error_TX= 0
-#     req_Error_RX= 0
+#     TXSTATES     = 0
+#     RXSTATES     = 0
+#     TX pin (TX1) = 1
+#     done_TXs1    = 1
+#     done_RXs1    = 0
+#     TEC          = 0x000
+#     REC          = 0x000
+#     imTX         = 0
+#     req_Error_TX = 0
+#     req_Error_RX = 0
 # 
 #   --- Node 2 (receiver) ---
-#     TXSTATES    = 0
-#     RXSTATES    = 0
-#     TX pin (TX2)= 1
-#     done_TXs2   = 1
-#     done_RXs2   = 1
-#     TEC         = 0x000
-#     REC         = 0x000
-#     imTX        = 0
-#     req_Error_TX= 0
-#     req_Error_RX= 0
-#     TOFILTERd   = 0x0000000000000000
-#     TOFILTERI   = 0x00000000
-#     D_Len_rec   = 0
-#     IDE_rec     = 0
-#     RTR_rec     = 1
+#     TXSTATES     = 0
+#     RXSTATES     = 0
+#     TX pin (TX2) = 1
+#     done_TXs2    = 1
+#     done_RXs2    = 1
+#     TEC          = 0x000
+#     REC          = 0x000
+#     imTX         = 0
+#     req_Error_TX = 0
+#     req_Error_RX = 0
+#     TOFILTERd    = 0x0000000000000000
+#     TOFILTERI    = 0x00000000
+#     D_Len_rec    = 0
+#     IDE_rec      = 0
+#     RTR_rec      = 1
 # 
 #   --- Shared Bus ---
-#     TX1 = 1
-#     TX2 = 1
-#     RX  = 1  (RX = TX1 & TX2)
+#     TX1      = 1
+#     TX2      = 1
+#     RX       = 1
 #     Tq ticks = 1531
 # =================================================
 # 
 # =================================================
-#   APB Register Reads: addr 40, 28, 32 (decimal)
+#   APB Register Reads: addr 40, 28, 32
 # =================================================
-# [124535000] APB RD (both) addr=40 (0x28) : Node1=0x00000000  Node2=0x4b435546
-# [124685000] APB RD (both) addr=28 (0x1c) : Node1=0x00000000  Node2=0x15465543
-# [124835000] APB RD (both) addr=32 (0x20) : Node1=0x00000000  Node2=0x00000014
+# [124510000] APB RD BOTH : addr=40 (0x28) : Node1=0x00000000 Node2=0x4b435546
+# [124640000] APB RD BOTH : addr=28 (0x1c) : Node1=0x00000000 Node2=0x15465543
+# [124770000] APB RD BOTH : addr=32 (0x20) : Node1=0x00000000 Node2=0x00000014
 # 
 # =================================================
-#   APB Write: RXFIFO_POP @ 24 (PWDATA=0x00000001)
+#   APB Write: RXFIFO_POP @ 24
+#   PWDATA = 0x00000001
 # =================================================
-# [124985000] APB WR (both) addr=24 data=0x00000001
+# [124900000] APB WR BOTH : addr=24 data=0x00000001
 # 
-# --- Resetting monitor prev regs (force full reprint) ---
-# [125093000] N1:TXST=0 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=1
+# --- Resetting monitor prev regs ---
+# [125013000] N1:TXST=0 RXST=0 | N2:TXST=0 RXST=0 | TX1=1 TX2=1 RX=1 | dTx1=1 dRx1=0 dTx2=1 dRx2=1
 # 
 # =================================================
 #   APB Read @ 28 after RXFIFO_POP
 # =================================================
-# [129115000] APB RD (both) addr=28 (0x1c) : Node1=0x00000000  Node2=0x00000000
+# [129030000] APB RD BOTH : addr=28 (0x1c) : Node1=0x00000000 Node2=0x00000000
 # 
 # =================================================
-#   APB Signal Snapshot (all APB signals)
+#   APB Signal Snapshot
 # =================================================
 #   PSEL1    = 0
 #   PSEL2    = 0
@@ -207,9 +202,9 @@ run -all
 #   PRDATA1  = 0x00000000
 #   PRDATA2  = 0x00000000
 # =================================================
-# ** Note: $finish    : ./MAINFSMTB.sv(446)
-#    Time: 131115 ns  Iteration: 1  Instance: /tb_MAINFSM_2NODE
+# ** Note: $finish    : ./Simulation/MAINFSMTB.sv(818)
+#    Time: 131025 ns  Iteration: 1  Instance: /tb_MAINFSM_2NODE
 # 1
-# Break in Module tb_MAINFSM_2NODE at ./MAINFSMTB.sv line 446
+# Break in Module tb_MAINFSM_2NODE at ./Simulation/MAINFSMTB.sv line 818
 
 

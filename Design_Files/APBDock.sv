@@ -18,7 +18,6 @@ module APBDock (
     output reg        rd_cmd,      // read_pop
     output reg [ 4:0] PWADDR
 );
-  reg done_HSr;
   reg [7:0] REGBANK [28:43];  // 5 registers for reading, index = PADDR/4
   reg       sample_en;
   reg [5:0] PADDRr;           // registered version
@@ -31,7 +30,6 @@ module APBDock (
   reg rd_cmd_rr;
   always @(posedge PCLK or negedge PRESETn) begin
     if (~PRESETn) begin
-      done_HSr<=0;
       State<=0;
       PREADY      <= 0;
       REGBANK[28] <= 0;
@@ -62,7 +60,6 @@ module APBDock (
       rd_cmd_rr<=0;
     end else begin
       State<=Stater;
-      done_HSr<=done_HS;
       if (sample_en) begin
         PADDRr  <= PADDR;
         PWRITEr <= PWRITE;
@@ -158,7 +155,7 @@ module APBDock (
           read_en = 0;
           sample_en=0;
         if(State==1)begin
-            if(done_HS&&~done_HSr)
+            if(done_HS)
             begin
             Stater=2;
             changer=0;
@@ -175,11 +172,11 @@ module APBDock (
             end
           end
         else if(State==2)begin
-            if(~done_HS&&done_HSr)
+            if(~done_HS)
             begin
               Stater=3;
               changer=0;
-              PREADYr=1;
+              PREADYr=1&&(PSEL && PWRITEr);
               write_en=0;
               rd_cmd_r = 0;
             end

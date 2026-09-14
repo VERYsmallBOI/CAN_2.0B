@@ -50,7 +50,6 @@ module APBCDC (
     TXERROR=4'd12;
 
     // Internal Registers
-    reg        change_can_r;
     reg [4:0]  PWADDR_can;
     reg [7:0]  REGBANK_can [23:0];
     reg [1:0]  Cnt_srst;
@@ -169,7 +168,6 @@ TFF done_tff(.D(done_HS_CAN),.rst(PRESETn),.clk(PCLK),.q(done_HS));
 always@(posedge Tq or negedge CAN_RST)begin
 if(~CAN_RST)begin
    done_HS_CAN<=0;
-   change_can_r<=0;
    done_TXr<=0;
    TRANSMIT<=0;
    // TXREQ is 0 all the way
@@ -217,24 +215,19 @@ SRST<=1;
 end
 else begin
     done_TXr<=done_TX;
-    change_can_r<=change_can;
-    if(change_can&&~change_can_r)
-        done_HS_CAN<=1;
-else if(change_can==0 && change_can_r==1) //deassert
-            done_HS_CAN<=0;
-
-            Cnt_srst<=Cnt_srstr;
+    Cnt_srst<=Cnt_srstr;
     SRST<=SRSTr;
 
     if(((PWADDR_can>=4)&&(TXSTATES==TXIDLE || TXSTATES ==  TXERROR || TXSTATES == TXINTERMISSION || TXSTATES == TXSUSPEND))||(PWADDR_can<4 && TXSTATES==TXIDLE))begin 
 
-    if(change_can&&~change_can_r)begin
+    if(change_can&&done_HS_CAN==0)begin
         PWADDR_can<=PWADDR;
         TXBUFFER_can<=TXBUFFER;
+        done_HS_CAN<=1'b1;
     end
-else if(change_can==0 && change_can_r==1)   begin//deassert
+else if(change_can==0 && done_HS_CAN==1)   begin//deassert
     //no overflow ever cos the PWADDR_can ever be 
-
+            done_HS_CAN<=1'b0;
             REGBANK_can[5'(PWADDR_can)]<=TXBUFFER_can[7:0];
             REGBANK_can[5'(PWADDR_can+1)]<=TXBUFFER_can[15:8];
             REGBANK_can[5'(PWADDR_can+2)]<=TXBUFFER_can[23:16];
@@ -255,7 +248,7 @@ end
 end
 
 always@(*)begin
-if(~change_can && change_can_r && PWADDR_can<4 && (TXSTATES==TXIDLE))begin //all timing and mode regs
+if(~change_can && done_HS_CAN && PWADDR_can<4 && (TXSTATES==TXIDLE))begin //all timing and mode regs
 SRSTr=0;
 Cnt_srstr=2;
 end
