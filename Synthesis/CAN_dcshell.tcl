@@ -10,6 +10,6 @@ read_sdc CAN.sdc
 link
 check_design
 write_file -format verilog -hier -out MAINFSM_unmapped.v
-compile
+compile_ultra
 write_file -format verilog -hier -out MAINFSM_mapped.v
-write_file -format verilog -hier -out MAINFSM_mapped.ddc
+write_file -format ddc -hier -out MAINFSM_mapped.ddc
