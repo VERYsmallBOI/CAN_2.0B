@@ -1,0 +1,3 @@
+# Ensure Vivado IP files keep their exact line endings
+*.xci text eol=lf
+*.xcix binary

@@ -25,7 +25,6 @@ output reg [3:0]RXSTATES;
 reg [3:0]RXSTATESr;
 //reg 
 reg [5:0] Cnt,Cntr;
-reg sample;
 wire bitisbs,allequal,usebs;
 output reg done;
 reg req_Errorr;
@@ -280,18 +279,7 @@ else begin
 end
 end
 
-always@(posedge Tq or negedge rst)begin
-if(!rst)begin
-sample<=1'b1;
-end
-else begin
-    if(RXen)
-    begin
-        sample<=RXBUS;
-    end
-    else sample<=sample;//will have one Bit time old value at eval so useless for 
-end
-end
+
 
 
 

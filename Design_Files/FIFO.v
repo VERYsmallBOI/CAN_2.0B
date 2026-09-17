@@ -5,7 +5,7 @@ input wclk,rclk,wrst,rrst,rcmd,wcmd;
 input [98:0]wdata;
 reg[4:0]rptr,wptr;
 output reg [98:0]rdata;
-reg [98:0]FIFOMEM[15:0];//15 messages
+reg [98:0]FIFOMEM[15:0];//16 messages
 reg [4:0]wptrr,rptrr;
 wire [4:0]wptrg,rptrg,wptrgs,rptrgs;
 output reg empty;
