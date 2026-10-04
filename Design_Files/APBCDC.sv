@@ -218,7 +218,7 @@ else begin
     Cnt_srst<=Cnt_srstr;
     SRST<=SRSTr;
 
-    if(((PWADDR_can>=4)&&(TXSTATES==TXIDLE || TXSTATES ==  TXERROR || TXSTATES == TXINTERMISSION || TXSTATES == TXSUSPEND))||(PWADDR_can<4 && TXSTATES==TXIDLE))begin 
+    if((~TRANSMIT||PWADDR_can<4)&&(change_can||done_HS_CAN))begin 
 
     if(change_can&&done_HS_CAN==0)begin
         PWADDR_can<=PWADDR;
@@ -234,21 +234,20 @@ else if(change_can==0 && done_HS_CAN==1)   begin//deassert
             REGBANK_can[5'(PWADDR_can+3)]<=TXBUFFER_can[31:24];
         end
     end
-    else begin
-        REGBANK_can[20]<=0;
-    end
+else begin
+    REGBANK_can[20]<=8'b0;
+end
     if(REGBANK_can[20]==8'b1)begin
         TRANSMIT<=1;
     end
     else if(done_TXr==0 && done_TX==1) begin
         TRANSMIT<=0;
     end
-
 end
 end
 
 always@(*)begin
-if(~change_can && done_HS_CAN && PWADDR_can<4 && (TXSTATES==TXIDLE))begin //all timing and mode regs
+if(~change_can && done_HS_CAN && PWADDR_can<4 )begin //all timing and mode regs
 SRSTr=0;
 Cnt_srstr=2;
 end

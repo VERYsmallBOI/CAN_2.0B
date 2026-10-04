@@ -73,10 +73,10 @@ end
 
 
 //RXBUS routing pending final end point ised will be RXBUS  start point depends on Mode
-TFF TFF_RXB(.D(RX),.rst(CAN_RST),.clk(Tq),.q(RXBUSs));
+TFF0 TFF_RXB(.D(RX),.rst(CAN_RST),.clk(Tq),.q(RXBUSs));
 
 TFF done_RX_TFF(.D(done_RX),.rst(PRESETn),.clk(PCLK),.q(done_RXs));
-TFF done_TX_TFF(.D(done_TX),.rst(PRESETn),.clk(PCLK),.q(done_TXs));
+TFF0 done_TX_TFF(.D(done_TX),.rst(PRESETn),.clk(PCLK),.q(done_TXs));
 
 // TPROP: legal range 1 to 8 (4 bits)
 assign TPROP_Amender = (TPROP > 4'd8) ? 4'd8 : 

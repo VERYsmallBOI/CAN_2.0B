@@ -381,8 +381,6 @@ always @(posedge Tq or negedge rst) begin
             
             if(req_Error==0 && req_Errorr==0 && TXSTATES==EOF && Cnt==0)
                 done<=1;
-            else if(TXSTATES==ARB && TXSTATESr==IDLE)//arb lost
-                done<=1;
             else if(TXSTATES==IDLE || TXSTATES==INTERMISSION || TXSTATES==SUSPEND)
                 done<=done;
             else done<=0;
