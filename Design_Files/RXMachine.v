@@ -1,6 +1,3 @@
-//code for all errors except ack and biterror
-//all overload frames
-//gets TEC from TXMachine and Sends REC to it
 //pad and check for intermission bfr going to idle
 //IMPORTANT:Frames in the Extended Format include the DATA LENGTH CODE and two reserved bits r1 and r0. 
 //The reserved bits have to be sent ’dominant’, but receivers accept ’dominant’ and ’recessive’ bits in all combinations

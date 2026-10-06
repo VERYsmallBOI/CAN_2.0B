@@ -120,7 +120,7 @@ assign srst_crc=srst&&(TXSTATES != IDLE) && (TXSTATES != INTERMISSION) && (TXSTA
 
     // Next State Logic
     always @(*) begin //have to add pause logic from BS (but not crc )
-        if ((TXSTATES == IDLE) && (RXSTATES == RXIDLE||RXSTATES ==RXINTERMISSION3)) begin
+        if ((TXSTATES == IDLE) && (RXSTATES == RXIDLE||RXSTATES ==RXINTERMISSION3) && TEC<256) begin
             if (Transmit == 1) begin
                 TXSTATESr = SOF;
                 Cntr      = 0;
